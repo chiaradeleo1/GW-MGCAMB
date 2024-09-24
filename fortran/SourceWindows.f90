@@ -79,7 +79,7 @@
         real(dl) chi0, chimin
         integer :: mag_index =0 !The index into the extra sources used for adding magnification to counts
         real(dl), dimension(:), allocatable :: winF, wing,wing2,wingtau,dwing,dwing2,dwingtau,ddwing,ddwing2,ddwingtau,&
-            winV,dwinV,ddwinV, win_lens, comoving_density_ev
+            winISW, dwinISW, winTD, dwinTD, winGPhi, dwinGPhi, winD, dwinD, winLSD, dwinLSD, ddwinLSD, winV,dwinV,ddwinV, win_lens, comoving_density_ev
         real(dl) Fq, optical_depth_21
         logical has_lensing_window
     end Type TRedWin

@@ -1700,11 +1700,13 @@
     use StringUtils
     class(TThermoData) :: this
     class(CAMBdata), target :: State
+   ! real(dl), intent(out) :: adotdota, Hdotdot
     real(dl), intent(in) :: taumin
     integer nthermo
     real(dl) tau01,a0,barssc,dtau
     real(dl) tau,a,a2
     real(dl) adot,fe,thomc0
+   ! real(dl) gamma, beta
     real(dl) dtbdla,vfi,cf1,maxvis, vis, z_scale
     integer ncount,i,j1,iv,ns
     real(dl), allocatable :: spline_data(:)
@@ -1882,6 +1884,8 @@
         a = this%scaleFactor(i)
         adot = 1/dtauda(State,a)
         this%adot(i) = adot
+        !adotdota = 0._dl
+        !Hdotdot = 0._dl
         if (this%matter_verydom_tau ==0 .and. a > a_verydom) then
             this%matter_verydom_tau = tau
         end if
@@ -2391,11 +2395,13 @@
         allocate(this%step_redshift(nstep), this%rhos_fac(nstep), this%drhos_fac(nstep))
         do i=1,State%num_redshiftwindows
             associate (Win => State%Redshift_W(i))
-                allocate(Win%winF(nstep),Win%wing(nstep),Win%dwing(nstep),Win%ddwing(nstep), &
-                    Win%winV(nstep),Win%dwinV(nstep),Win%ddwinV(nstep))
-                allocate(Win%win_lens(nstep),Win%wing2(nstep),Win%dwing2(nstep),Win%ddwing2(nstep))
-                allocate(Win%wingtau(nstep),Win%dwingtau(nstep),Win%ddwingtau(nstep))
-                if (Win%kind == window_counts) then
+                allocate(Win%winF(nstep),Win%wing(nstep),Win%dwing(nstep),Win%ddwing(nstep), & !CDL
+                    Win%winV(nstep),Win%dwinV(nstep),Win%ddwinV(nstep),Win%winISW(nstep),Win%dwinISW(nstep), & !CDL
+                    Win%winTD(nstep),Win%dwinTD(nstep),Win%winGPhi(nstep),Win%dwinGPhi(nstep),Win%winD(nstep),Win%dwinD(nstep), & !CDL
+                    Win%winLSD(nstep), Win%dwinLSD(nstep), Win%ddwinLSD(nstep)) !CDL
+                allocate(Win%win_lens(nstep),Win%wing2(nstep),Win%dwing2(nstep),Win%ddwing2(nstep)) !CDL
+                allocate(Win%wingtau(nstep),Win%dwingtau(nstep),Win%ddwingtau(nstep)) !CDL
+                if ((Win%kind == window_counts) .or. (Win%kind == window_gw) ) then !CDL 
                     allocate(Win%comoving_density_ev(nstep))
                 end if
             end associate
@@ -2433,19 +2439,30 @@
         associate (RedWin => State%Redshift_W(i))
             RedWin%wing=0
             RedWin%winV=0
+            RedWin%winD=0
             RedWin%winF=0
             RedWin%wing2=0
+            RedWin%winTD=0
+            RedWin%winISW=0
+            RedWin%winLSD=0
+            RedWin%winGPhi=0
             RedWin%dwing=0
             RedWin%dwinV=0
+            RedWin%dwinD=0
             RedWin%dwing2=0
+            RedWin%dwinTD=0
+            RedWin%dwinISW=0
+            RedWin%dwinLSD=0
+            RedWin%dwinGPhi=0
             RedWin%ddwing=0
             RedWin%ddwinV=0
             RedWin%ddwing2=0
+            RedWin%ddwinLSD=0
             RedWin%wingtau=0
             RedWin%dwingtau=0
             RedWin%ddwingtau=0
             RedWin%Fq = 0
-            if (RedWin%kind == window_counts) then
+            if ((RedWin%kind == window_counts) .or. (RedWin%kind == window_gw) ) then !CDL
                 RedWin%comoving_density_ev  = 0
             end if
         end associate
@@ -2522,6 +2539,31 @@
                             RedWin%comoving_density_ev(j) = 0
                         end if
                     end if
+
+                elseif (RedWin%kind == window_gw) then !CDL
+
+                    !gamma = 1._dl !/ (1._dl + 1._dl/(State%tau0 - tau) * a/adot )
+                    !beta = 1._dl ! gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2  ) + &
+                           !2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 )
+            
+                    !window is n(a) where n is TOTAL not fractional number
+                    RedWin%wing(j) = adot *window
+                    
+                    ! ISW window function
+                    !RedWin%dwinISW(j) = RedWin%wing(j) * (2._dl * (beta+1))
+
+                    ! TD window function
+                    !RedWin%dwinTD(j) = RedWin%wing(j) * ((1-beta)/(State%tau0 - tau) + gamma/(State%tau0 - tau)**2/(adot/a))
+
+                    ! Potential gradient window function
+                    !RedWin%winGPhi(j) = RedWin%wing(j) * gamma/(adot/a)
+
+                    ! Velocity window function
+                    !RedWin%winD(j) = RedWin%wing(j) * (1  - 2._dl*gamma - 2._dl*(beta+1))
+
+                    ! LSD window function
+                    !RedWin%winLSD(j) = RedWin%wing(j) * gamma/(adot/a) * 2._dl
+
                 end if
             end associate
         end do

@@ -4,5 +4,5 @@ camb.mod camb.o camb.o: ../camb.f90 precision.mod results.mod \
  lensing.mod bispectrum.mod mgcamb.mod nonlinear.mod recombination.mod \
  nonlinear.mod darkenergyfluid.mod darkenergyppf.mod quintessence.mod \
  results.mod mgcamb.mod constants.mod \
- /Users/chiaradeleo/Desktop/MGCAMB_fork/MGCAMB_v4/fortran/../forutils/Release//iniobjects.mod \
+ /Users/chiaradeleo/Desktop/GW-MGCAMB/fortran/../forutils/Release//iniobjects.mod \
  lensing.mod constants.mod bispectrum.mod cambmain.mod
