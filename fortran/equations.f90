@@ -1596,7 +1596,7 @@
 
                 if (.not. CP%SourceTerms%use_21cm_mK) sources(3+w_ix)= sources(3+w_ix) /W%Fq
             elseif (W%kind == window_gw) then !CDL
-            
+                write(*,*) 'Hello!'
                 if(CP%SourceTerms%gw_density) then
                     WRITE(*,*) 'Hello, world!'
 
