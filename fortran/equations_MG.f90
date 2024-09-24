@@ -1642,7 +1642,7 @@
             elseif (W%kind == window_gw) then !CDL
                ! write(*,*) 'Hello, MG!'
                 if(CP%SourceTerms%gw_density) then
-                    gw_density_source = 2._dl
+                    gw_density_source = W%wing(j)*(clxc*W%Window%GetBias(k,a) + (W%comoving_density_ev(j) - 3*adotoa)*sigma/k)
                     write(*,*) 'gw_density_source = ', gw_density_source
                 else
                     gw_density_source = 0
