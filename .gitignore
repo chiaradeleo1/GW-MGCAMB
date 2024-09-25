@@ -1,0 +1,7 @@
+*.o
+*.so
+*.pyc
+*.d
+*.mod
+chains/
+*.ipynb_checkpoints*
