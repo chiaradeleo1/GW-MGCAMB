@@ -5,3 +5,4 @@
 *.mod
 chains/
 *.ipynb_checkpoints*
+*.txt

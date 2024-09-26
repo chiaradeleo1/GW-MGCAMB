@@ -1692,6 +1692,20 @@
 
     end function Thermo_OpacityToTime
 
+    subroutine calculate_adotdota(this,adotdota) !CDL
+
+        use MGCAMB
+
+        implicit none
+        class(CAMBdata) :: this
+        real(dl), intent(out) :: adotdota
+  
+        type(MGCAMB_timestep_cache) :: mg_cache
+        adotdota = mg_cache%Hdot - mg_cache%adotoa**2
+
+    end subroutine calculate_adotdota
+
+
     subroutine Thermo_Init(this, State,taumin)
     !  Compute and save unperturbed baryon temperature and ionization fraction
     !  as a function of time.  With nthermo=10000, xe(tau) has a relative
@@ -1700,13 +1714,13 @@
     use StringUtils
     class(TThermoData) :: this
     class(CAMBdata), target :: State
-   ! real(dl), intent(out) :: adotdota, Hdotdot
+    !real(dl) :: adotdota  !CDL
     real(dl), intent(in) :: taumin
     integer nthermo
     real(dl) tau01,a0,barssc,dtau
     real(dl) tau,a,a2
     real(dl) adot,fe,thomc0
-   ! real(dl) gamma, beta
+    real(dl) gamma, beta !CDL 
     real(dl) dtbdla,vfi,cf1,maxvis, vis, z_scale
     integer ncount,i,j1,iv,ns
     real(dl), allocatable :: spline_data(:)
@@ -1884,7 +1898,7 @@
         a = this%scaleFactor(i)
         adot = 1/dtauda(State,a)
         this%adot(i) = adot
-        !adotdota = 0._dl
+        !adotdota = 0._dl !CDL
         !Hdotdot = 0._dl
         if (this%matter_verydom_tau ==0 .and. a > a_verydom) then
             this%matter_verydom_tau = tau
@@ -2421,10 +2435,11 @@
     real(dl) tau,  a, a2
     real(dl) Tspin, Trad, rho_fac, tau_eps
     real(dl) window, winamp
-    real(dl) z,rhos, adot, exp_fac
+    real(dl) z,rhos, adot, exp_fac, adotdota !, Hdotdot !CDL 
     real(dl) tmp(TimeSteps%npoints), tmp2(TimeSteps%npoints), hubble_tmp(TimeSteps%npoints)
     real(dl), allocatable , dimension(:,:) :: int_tmp, back_count_tmp
     integer ninterp
+    real(dl) :: gamma, beta !CDL
 
     ! Prevent false positive warnings for uninitialized
     Tspin = 0._dl
@@ -2479,7 +2494,10 @@
         a = 1._dl/(1._dl+z)
         a2=a**2
         adot=1._dl/dtauda(State,a)
+        adotdota = 0._dl
 
+        call calculate_adotdota(State, adotdota) !CDL
+        !print*, 'adotdota', adotdota 
 
         if (State%CP%Do21cm) then
             Tspin = State%CP%Recomb%T_s(a)
@@ -2541,11 +2559,12 @@
                     end if
 
                 elseif (RedWin%kind == window_gw) then !CDL
-
-                    !gamma = 1._dl !/ (1._dl + 1._dl/(State%tau0 - tau) * a/adot )
-                    !beta = 1._dl ! gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2  ) + &
-                           !2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 )
-            
+                    
+                    gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot )
+                    beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2  ) + &
+                           2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 -1)
+                    
+                    !print*, 'beta = ', beta
                     !window is n(a) where n is TOTAL not fractional number
                     RedWin%wing(j) = adot *window
                     

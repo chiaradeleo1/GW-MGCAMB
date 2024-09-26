@@ -6,7 +6,7 @@ results.mod transfer.mod results.o results.o: ../results.f90 \
  mathutils.mod config.mod model.mod precision.mod constants.mod \
  mgcamb.mod constants.mod \
  /Users/chiaradeleo/Desktop/GW-MGCAMB/fortran/../forutils/Release//mpiutils.mod \
- constants.mod \
+ mgcamb.mod constants.mod \
  /Users/chiaradeleo/Desktop/GW-MGCAMB/fortran/../forutils/Release//stringutils.mod \
  constants.mod results.mod \
  /Users/chiaradeleo/Desktop/GW-MGCAMB/fortran/../forutils/Release//fileutils.mod \
