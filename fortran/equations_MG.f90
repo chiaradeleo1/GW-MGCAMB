@@ -1432,6 +1432,7 @@
     end if
 
     do w_ix = 1, State%num_redshiftwindows
+        !print*, 'num_redshiftwindows = ', State%num_redshiftwindows
         associate (W => State%Redshift_W(w_ix))
 
             if (W%kind == window_lensing) then
@@ -1640,16 +1641,17 @@
 
                 if (.not. CP%SourceTerms%use_21cm_mK) sources(3+w_ix)= sources(3+w_ix) /W%Fq
             elseif (W%kind == window_gw) then !CDL
-               ! write(*,*) 'Hello, MG!'
+                !write(*,*) 'Hello, MG!'
                 if(CP%SourceTerms%gw_density) then
                     gw_density_source = W%wing(j)*(clxc*W%Window%GetBias(k,a) + (W%comoving_density_ev(j) - 3*adotoa)*sigma/k)
-                    !write(*,*) 'gw_density_source = ', gw_density_source
+                
                 else
                     gw_density_source = 0
                 end if
                 sources(3+w_ix)=    gw_density_source 
             end if
         end associate
+        close(10)
     end do
     end subroutine output_window_sources
 

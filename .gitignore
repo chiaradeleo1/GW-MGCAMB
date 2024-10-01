@@ -6,3 +6,4 @@
 chains/
 *.ipynb_checkpoints*
 *.txt
+*.dat

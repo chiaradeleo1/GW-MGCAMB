@@ -305,7 +305,7 @@
                 RedWin%source_type = window_counts
             elseif (S == 'gws') then
                     RedWin%source_type = window_gw !CDL
-                    write(*,*) 'Hello, world!'
+                    !write(*,*) 'Hello, world!'
             elseif (S == 'lensing') then
                 RedWin%source_type = window_lensing
             else
@@ -332,8 +332,8 @@
             end if
             if (RedWin%source_type == window_gw) then !CDL
                 DoGws = .true.
-                RedWin%bias = 2._dl !Ini%Read_Double_Array('redshift_bias', i) 
-                !RedWin%dlog10Ndm = Ini%Read_Double_Array('redshift_dlog10Ndm', i ,0.d0) 
+                RedWin%bias = Ini%Read_Double_Array('redshift_bias', i) 
+                RedWin%dlog10Ndm = Ini%Read_Double_Array('redshift_dlog10Ndm', i ,0.d0) 
             end if
         class default
             call MpiStop('Probable compiler bug')
