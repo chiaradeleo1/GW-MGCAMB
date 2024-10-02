@@ -7,3 +7,10 @@ chains/
 *.ipynb_checkpoints*
 *.txt
 *.dat
+Debug/
+Debuglib/
+Release/
+Releaselib/
+build
+*egg*
+test*dat
