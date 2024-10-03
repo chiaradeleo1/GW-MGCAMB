@@ -115,6 +115,48 @@
 
     END SUBROUTINE spline_deriv
 
+    SUBROUTINE spline_derivv(x,y,y1,n)
+        !Get derivative y1 given array of x, y and y''
+        use Precision
+        implicit none
+        INTEGER, intent(in) :: n
+        real(dl), intent(in) :: x(n), y(n)
+        real(dl), intent(out) :: y1(n)
+        INTEGER i
+        real(dl) dx
+    
+        do i=1, n-1
+    
+            dx = (x(i+1) - x(i))
+            y1(i) = (y(i+1) - y(i))/dx
+        end do
+        dx = x(n) - x(n-1)
+        y1(n) = (y(n) - y(n-1))/dx
+    
+        END SUBROUTINE spline_derivv
+    
+        SUBROUTINE spline_dderiv(x,y,y2,n)
+        !Get second derivative y2 given array of x, y and y''
+        use Precision
+        implicit none
+        INTEGER, intent(in) :: n
+        real(dl), intent(in) :: x(n), y(n)
+        real(dl), intent(out) :: y2(n)
+        INTEGER i
+        real(dl) num, den
+    
+        do i=2, n-1
+    
+            num = (x(i) - x(i+1))*y(i-1) + (x(i+1) - x(i-1))*y(i) + (x(i-1) - x(i))*y(i+1)
+            den = (x(i) - x(i+1))*x(i-1)**2 + (x(i+1) - x(i-1))*x(i)**2 + (x(i-1) - x(i))*x(i+1)**2
+            y2(i) = 2._dl * num/den
+        end do
+    
+        y2(1) = y2(2)
+        y2(n) = y2(n-1)
+        
+        END SUBROUTINE spline_dderiv
+
     subroutine spline_integrate(x,y,y2,yint,n)
     !Cumulative integral of cubic spline
     use Precision

@@ -142,7 +142,8 @@ class SourceTermParams(CAMB_Structure):
         ("line_extra", c_bool, "Include other sources"),
         ("line_reionization", c_bool, "Replace the E modes with 21cm polarization"),
         ("use_21cm_mK", c_bool, "Use mK units for 21cm"),
-        ("gw_density" , c_bool, "Include the density perturbation source for gws")] #CDL
+        ("gw_density" , c_bool, "Include the density perturbation source for gws"), #CDL
+        ("gw_timedelay" , c_bool, "Include the density perturbation source for gws")] #CDL
 
 
 class CustomSources(CAMB_Structure):

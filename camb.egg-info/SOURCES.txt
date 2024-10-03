@@ -76,6 +76,12 @@ fortran/recfast.f90
 fortran/reionization.f90
 fortran/results.f90
 fortran/subroutines.f90
+fortran/test_counts_lensedCls.dat
+fortran/test_counts_lenspotentialCls.dat
+fortran/test_counts_scalCls.dat
+fortran/test_counts_scalarCovCls.dat
+fortran/test_gws_scalCls.dat
+fortran/test_gws_scalarCovCls.dat
 fortran/test_lensedCls.dat
 fortran/test_lenspotentialCls.dat
 fortran/test_matterpower.dat

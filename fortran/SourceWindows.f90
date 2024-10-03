@@ -68,6 +68,8 @@
         logical :: line_reionization = .false.
         logical :: use_21cm_mK = .true.
         logical :: gw_density = .true. !CDL
+        logical :: gw_timedelay = .true. !CDL
+        logical :: gw_evolve = .false. !CDL
     end type SourceTermParams
 
     Type TRedWin !internal type

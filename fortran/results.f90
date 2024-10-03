@@ -2451,7 +2451,7 @@
     ninterp = TimeSteps%npoints - jstart + 1
 
     do i = 1, State%num_redshiftwindows
-        associate (RedWin => State%Redshift_W(i))
+        associate (RedWin => State%Redshift_W(i)) !CDL
             RedWin%wing=0
             RedWin%winV=0
             RedWin%winD=0
@@ -2562,9 +2562,9 @@
                     
                     gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot )
                     beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2  ) + &
-                           2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 -1)
+                           2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 -2)
                     
-                    !print*, 'beta = ', beta
+                    
                     !window is n(a) where n is TOTAL not fractional number
                     RedWin%wing(j) = adot *window
                     
@@ -2572,7 +2572,7 @@
                     !RedWin%dwinISW(j) = RedWin%wing(j) * (2._dl * (beta+1))
 
                     ! TD window function
-                    !RedWin%dwinTD(j) = RedWin%wing(j) * ((1-beta)/(State%tau0 - tau) + gamma/(State%tau0 - tau)**2/(adot/a))
+                    RedWin%dwinTD(j) = RedWin%wing(j) * ((1-beta)/(State%tau0 - tau) + gamma/(State%tau0 - tau)**2/(adot/a))
 
                     ! Potential gradient window function
                     !RedWin%winGPhi(j) = RedWin%wing(j) * gamma/(adot/a)
@@ -2671,6 +2671,55 @@
                 !WinF is int[ g*(...)]
                 call spline_integrate(TimeSteps%points(jstart),RedWin%Wingtau(jstart),&
                     RedWin%ddWingtau(jstart), RedWin%WinF(jstart),ninterp)
+
+            elseif (RedWin%kind == window_gw) then !CDL
+
+                if (State%CP%SourceTerms%gw_evolve) then !CDL
+                    print*, 'gw_evolve not implemented yet!'
+                else
+                    !print*, 'Hello'
+                    RedWin%comoving_density_ev=0
+                    call spline(TimeSteps%points(jstart),hubble_tmp(jstart),ninterp,spl_large,spl_large,tmp) !CDL
+                    call spline_deriv(TimeSteps%points(jstart),hubble_tmp(jstart),tmp, tmp2(jstart), ninterp)
+
+                    RedWin%Wingtau(jstart:TimeSteps%npoints) = & !CDL
+                        2*(1-2.5*RedWin%Window%dlog10Ndm)*int_tmp(jstart:TimeSteps%npoints,i)/&
+                        hubble_tmp(jstart:TimeSteps%npoints)&
+                        + 5*RedWin%Window%dlog10Ndm*RedWin%Wing(jstart:TimeSteps%npoints) &
+                        + tmp2(jstart:TimeSteps%npoints)/hubble_tmp(jstart:TimeSteps%npoints)**2 &
+                        *RedWin%Wing(jstart:TimeSteps%npoints)
+                endif
+
+                call spline(TimeSteps%points(jstart),RedWin%Wingtau(jstart),ninterp, & !CDL
+                    spl_large,spl_large,RedWin%ddWingtau(jstart))
+                call spline_deriv(TimeSteps%points(jstart),RedWin%Wingtau(jstart),RedWin%ddWingtau(jstart), &
+                    RedWin%dWingtau(jstart), ninterp)
+
+                call spline_integrate(TimeSteps%points(jstart),RedWin%Wingtau(jstart),& !CDL
+                    RedWin%ddWingtau(jstart), RedWin%WinF(jstart),ninterp)
+
+                call spline(TimeSteps%points(jstart),RedWin%winISW(jstart),ninterp,spl_large,spl_large,tmp)
+                call spline_integrate(TimeSteps%points(jstart),RedWin%dwinISW(jstart),tmp, tmp2(jstart),ninterp)
+                RedWin%winISW(jstart:TimeSteps%npoints) =  &
+                    RedWin%winISW(jstart:TimeSteps%npoints) + tmp2(jstart:TimeSteps%npoints) !CDL
+
+                call spline(TimeSteps%points(jstart),RedWin%winTD(jstart),ninterp,spl_large,spl_large,tmp)
+                call spline_integrate(TimeSteps%points(jstart),RedWin%dwinTD(jstart),tmp, tmp2(jstart),ninterp)
+                RedWin%winTD(jstart:TimeSteps%npoints) =  &
+                    RedWin%winTD(jstart:TimeSteps%npoints) + tmp2(jstart:TimeSteps%npoints) !CDL
+
+                call spline(TimeSteps%points(jstart),RedWin%dwinGPhi(jstart),ninterp,spl_large,spl_large,tmp) !CDL
+                call spline_deriv(TimeSteps%points(jstart),RedWin%winGPhi(jstart),tmp, RedWin%dwinGPhi(jstart), ninterp)
+
+                call spline_derivv(TimeSteps%points(jstart),RedWin%winD(jstart), RedWin%dwinD(jstart), ninterp) !CDL
+
+                call spline(TimeSteps%points(jstart),RedWin%winLSD(jstart),ninterp,spl_large,spl_large,tmp) !CDL
+                call spline_deriv(TimeSteps%points(jstart),RedWin%winLSD(jstart),tmp, RedWin%dwinLSD(jstart), ninterp)
+                call spline_dderiv(TimeSteps%points(jstart),RedWin%winLSD(jstart),RedWin%ddwinLSD(jstart), ninterp)
+
+
+
+
             end if
         end associate
     end do
@@ -2855,6 +2904,8 @@
         !Turn on limber when k is a scale smaller than window width
         if (W%kind==window_lensing) then
             ell_limb = max(CP%SourceTerms%limber_phi_lmin,nint(50*LimBoost))
+        else if (W%kind==window_gw) then !CDL
+            ell_limb = max(CP%SourceTerms%limber_phi_lmin,nint(50*LimBoost),nint(LimBoost*6*W%chi0/W%sigma_tau))
         else
             ell_limb = max(CP%SourceTerms%limber_phi_lmin, nint(LimBoost*6*W%chi0/W%sigma_tau))
         end if

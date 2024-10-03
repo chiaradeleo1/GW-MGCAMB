@@ -1406,7 +1406,7 @@
     real(dl) s(0:10), t(0:10)
     real(dl) counts_radial_source, counts_velocity_source, counts_density_source, counts_ISW_source, &
         counts_redshift_source, counts_timedelay_source, counts_potential_source
-    real(dl) gw_density_source !CDL
+    real(dl) gw_density_source, gw_timedelay_source !CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1640,15 +1640,25 @@
                 end if
 
                 if (.not. CP%SourceTerms%use_21cm_mK) sources(3+w_ix)= sources(3+w_ix) /W%Fq
+
+
             elseif (W%kind == window_gw) then !CDL
-                !write(*,*) 'Hello, MG!'
+                ! Density source
                 if(CP%SourceTerms%gw_density) then
                     gw_density_source = W%wing(j)*(clxc*W%Window%GetBias(k,a) + (W%comoving_density_ev(j) - 3*adotoa)*sigma/k)
-                
                 else
                     gw_density_source = 0
                 end if
-                sources(3+w_ix)=    gw_density_source 
+
+                ! Time delay source:
+                if (CP%SourceTerms%gw_timedelay) then
+                    gw_timedelay_source = W%winTD(j)*2*phi
+                    print*, 'TD_source=', W%winTD(j)
+                else
+                    gw_timedelay_source = 0._dl
+                end if
+
+                sources(3+w_ix)=    gw_density_source + gw_timedelay_source
             end if
         end associate
         close(10)
@@ -3140,6 +3150,7 @@
         !> MGCAMB MOD START: Weyl Potential
         if ( tempmodel == 0 ) then
             phi = -((dgrho +3*dgq*adotoa/k)/EV%Kf(1) + dgpi)/(2*k2)
+            !print*, 'dgrho=', dgrho
             psiN = -((dgrho +3*dgq*adotoa/k)/EV%Kf(1) + 2._dl*dgpi)/(2*k2)
             phiN = -psiN - ((dgrho +3*dgq*adotoa/k)/EV%Kf(1) + dgpi)/k2
         else

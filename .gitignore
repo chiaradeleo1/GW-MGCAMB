@@ -14,3 +14,7 @@ Releaselib/
 build
 *egg*
 test*dat
+img/
+fortran/Release
+fortran/Releaselib
+camb
