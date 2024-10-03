@@ -11,10 +11,10 @@ Debug/
 Debuglib/
 Release/
 Releaselib/
-build
+build/
 *egg*
 test*dat
 img/
-fortran/Release
-fortran/Releaselib
+fortran/Release/
+fortran/Releaselib/
 camb
