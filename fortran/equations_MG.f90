@@ -1658,9 +1658,9 @@
                 end if
 
                 if (CP%SourceTerms%gw_velocity) then
-                    gw_velocity_source = W%dwinD(j)/k*sigma + W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma)
-                    print*, 'gw_velocity=',  ((W%dwinD(j)/k*sigma + W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma))-(W%dwinD(j)/k*sigma ))/(W%dwinD(j)/k*sigma )
-                    !print*, 'gw_velocity=',  W%dwinD(j)/k*sigma 
+                    gw_velocity_source = W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma)
+                    !CDL be careful the complete term should be  W%dwinD(j)/k*sigma + W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma), but W%dwinD(j) is giving us problems (NaN in the source terms).
+                    !CDL for the moment we discard this term as the contribution in the total sorce term is of the order of 1e-4 - 1e-2 
                 else
                     gw_velocity_source = 0._dl
                 end if
