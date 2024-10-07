@@ -1406,7 +1406,7 @@
     real(dl) s(0:10), t(0:10)
     real(dl) counts_radial_source, counts_velocity_source, counts_density_source, counts_ISW_source, &
         counts_redshift_source, counts_timedelay_source, counts_potential_source
-    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source !CDL
+    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source!CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1657,6 +1657,7 @@
                     gw_timedelay_source = 0._dl
                 end if
 
+                ! Doppler source 
                 if (CP%SourceTerms%gw_velocity) then
                     gw_velocity_source = W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma)
                     !CDL be careful the complete term should be  W%dwinD(j)/k*sigma + W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma), but W%dwinD(j) is giving us problems (NaN in the source terms).
@@ -1665,7 +1666,14 @@
                     gw_velocity_source = 0._dl
                 end if
 
-                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source
+                ! ISW source:
+                if (CP%SourceTerms%gw_ISW) then
+                    gw_isw_source = W%WinISW(j)*2*phidot
+                else
+                    gw_isw_source = 0._dl
+                end if
+
+                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source
                 !print*, 'sources=', sources(3+w_ix)
             end if
         end associate

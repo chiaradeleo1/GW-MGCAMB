@@ -145,7 +145,8 @@ class SourceTermParams(CAMB_Structure):
         ("gw_density" , c_bool, "Include the density perturbation source for gws"), #CDL
         ("gw_timedelay" , c_bool, "Include the TD * 1 / (H * chi) perturbation source for gws"), #CDL
         ("gw_evolve", c_bool, "Accout for source evolution for gws"),
-        ("gw_velocity" , c_bool, "Non-redshift distortion velocity terms for gws")] #CDL
+        ("gw_velocity" , c_bool, "Non-redshift distortion velocity terms for gws"), #CDL
+        ("gw_ISW", c_bool, "Include ISW terms for gws")] #CDL
 
 
 class CustomSources(CAMB_Structure):

@@ -2569,7 +2569,7 @@
                     RedWin%wing(j) = adot *window
                     
                     ! ISW window function
-                    !RedWin%dwinISW(j) = RedWin%wing(j) * (2._dl * (beta+1))
+                    RedWin%dwinISW(j) = RedWin%wing(j) * (2._dl * (beta+1))
 
                     ! TD window function
                     RedWin%dwinTD(j) = RedWin%wing(j) * ((1-beta)/(State%tau0 - tau) + gamma/(State%tau0 - tau)**2/(adot/a))

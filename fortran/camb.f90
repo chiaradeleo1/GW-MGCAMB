@@ -373,7 +373,7 @@
         call Ini%Read('gw_timedelay', P%SourceTerms%gw_timedelay)
         call Ini%Read('gw_evolve', P%SourceTerms%gw_evolve)
         call Ini%Read('gw_velocity', P%SourceTerms%gw_velocity)
-        !call Ini%Read('gw_isw', P%SourceTerms%gw_isw)
+        call Ini%Read('gw_ISW', P%SourceTerms%gw_ISW)
         !call Ini%Read('gw_lsd', P%SourceTerms%gw_lsd)
         !call Ini%Read('gw_lensing', P%SourceTerms%gw_lensing)
         !call Ini%Read('gw_potential', P%SourceTerms%gw_potential)
