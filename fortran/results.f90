@@ -2578,7 +2578,7 @@
                     !RedWin%winGPhi(j) = RedWin%wing(j) * gamma/(adot/a)
 
                     ! Velocity window function
-                    !RedWin%winD(j) = RedWin%wing(j) * (1  - 2._dl*gamma - 2._dl*(beta+1))
+                    RedWin%winD(j) = RedWin%wing(j) * (1  - 2._dl*gamma - 2._dl*(beta+1))
 
                     ! LSD window function
                     !RedWin%winLSD(j) = RedWin%wing(j) * gamma/(adot/a) * 2._dl

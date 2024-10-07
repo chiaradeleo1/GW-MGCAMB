@@ -70,6 +70,7 @@
         logical :: gw_density = .true. !CDL
         logical :: gw_timedelay = .true. !CDL
         logical :: gw_evolve = .false. !CDL
+        logical :: gw_velocity = .true. !CDL
     end type SourceTermParams
 
     Type TRedWin !internal type

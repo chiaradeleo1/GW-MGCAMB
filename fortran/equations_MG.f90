@@ -1406,7 +1406,7 @@
     real(dl) s(0:10), t(0:10)
     real(dl) counts_radial_source, counts_velocity_source, counts_density_source, counts_ISW_source, &
         counts_redshift_source, counts_timedelay_source, counts_potential_source
-    real(dl) gw_density_source, gw_timedelay_source !CDL
+    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source !CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1653,12 +1653,19 @@
                 ! Time delay source:
                 if (CP%SourceTerms%gw_timedelay) then
                     gw_timedelay_source = W%winTD(j)*2*phi
-                    print*, 'TD_source=', W%winTD(j)
                 else
                     gw_timedelay_source = 0._dl
                 end if
 
-                sources(3+w_ix)=    gw_density_source + gw_timedelay_source
+                if (CP%SourceTerms%gw_velocity) then
+                    gw_velocity_source = W%dwinD(j)/k*sigma + W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma)
+                    !print*, 'gw_velocity=', gw_velocity_source
+                else
+                    gw_velocity_source = 0._dl
+                end if
+
+                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source
+                print*, 'sources=', sources(3+w_ix)
             end if
         end associate
         close(10)
