@@ -1665,7 +1665,7 @@
                 end if
 
                 sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source
-                print*, 'sources=', sources(3+w_ix)
+                !print*, 'sources=', sources(3+w_ix)
             end if
         end associate
         close(10)
