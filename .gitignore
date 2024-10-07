@@ -18,3 +18,5 @@ img/
 fortran/Release/
 fortran/Releaselib/
 camb
+/build
+/camb.egg-info
