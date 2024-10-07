@@ -1659,7 +1659,8 @@
 
                 if (CP%SourceTerms%gw_velocity) then
                     gw_velocity_source = W%dwinD(j)/k*sigma + W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma)
-                    !print*, 'gw_velocity=', gw_velocity_source
+                    print*, 'gw_velocity=',  ((W%dwinD(j)/k*sigma + W%winD(j)/k*(etak/EV%Kf(1) - 2.D0*adotoa*sigma))-(W%dwinD(j)/k*sigma ))/(W%dwinD(j)/k*sigma )
+                    !print*, 'gw_velocity=',  W%dwinD(j)/k*sigma 
                 else
                     gw_velocity_source = 0._dl
                 end if
