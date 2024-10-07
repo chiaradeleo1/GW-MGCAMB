@@ -72,6 +72,7 @@
         logical :: gw_evolve = .false. !CDL
         logical :: gw_velocity = .true. !CDL
         logical :: gw_ISW = .true. !CDL
+        logical :: gw_lsd = .true. !CDL
 
     end type SourceTermParams
 

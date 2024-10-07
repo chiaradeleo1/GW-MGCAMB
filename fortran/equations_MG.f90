@@ -1406,7 +1406,7 @@
     real(dl) s(0:10), t(0:10)
     real(dl) counts_radial_source, counts_velocity_source, counts_density_source, counts_ISW_source, &
         counts_redshift_source, counts_timedelay_source, counts_potential_source
-    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source!CDL
+    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source!CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1673,11 +1673,18 @@
                     gw_isw_source = 0._dl
                 end if
 
-                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source
+                if (CP%SourceTerms%gw_lsd) then
+                    gw_lsd_source = W%ddwinLSD(j)/k * sigma + W%dwinLSD(j)/k * (2.D0*etak/EV%Kf(1) - 4.D0*adotoa*sigma) + &
+                                              W%winLSD(j)/k * ((4.D0*adotoa**2+gpres+grho/3.D0)*sigma - etak/adotoa*k**2/3.D0 - dgrho/adotoa/6.D0*k +(etak/adotoa*k**2/3.D0 + dgrho/adotoa/6.D0*k + dgq/2.D0 - 2.D0*etak*adotoa)/EV%Kf(1))
+                else
+                    gw_lsd_source = 0._dl
+                end if
+
+                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source + gw_lsd_source
                 !print*, 'sources=', sources(3+w_ix)
             end if
         end associate
-        close(10)
+        
     end do
     end subroutine output_window_sources
 

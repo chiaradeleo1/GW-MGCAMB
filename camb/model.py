@@ -146,7 +146,8 @@ class SourceTermParams(CAMB_Structure):
         ("gw_timedelay" , c_bool, "Include the TD * 1 / (H * chi) perturbation source for gws"), #CDL
         ("gw_evolve", c_bool, "Accout for source evolution for gws"),
         ("gw_velocity" , c_bool, "Non-redshift distortion velocity terms for gws"), #CDL
-        ("gw_ISW", c_bool, "Include ISW terms for gws")] #CDL
+        ("gw_ISW", c_bool, "Include ISW terms for gws"), #CDL
+        ("gw_lsd", c_bool, "Include Luminosity space distorsion terms for gws")] #CDL
 
 
 class CustomSources(CAMB_Structure):

@@ -374,11 +374,10 @@
         call Ini%Read('gw_evolve', P%SourceTerms%gw_evolve)
         call Ini%Read('gw_velocity', P%SourceTerms%gw_velocity)
         call Ini%Read('gw_ISW', P%SourceTerms%gw_ISW)
-        !call Ini%Read('gw_lsd', P%SourceTerms%gw_lsd)
+        call Ini%Read('gw_lsd', P%SourceTerms%gw_lsd)
         !call Ini%Read('gw_lensing', P%SourceTerms%gw_lensing)
         !call Ini%Read('gw_potential', P%SourceTerms%gw_potential)
         !call Ini%Read('gw_gradpotential', P%SourceTerms%gw_gradpotential)
-        !call Ini%Read('gwc_scalar_field', P%SourceTerms%gw_scalar_field)
     end if
 
 
