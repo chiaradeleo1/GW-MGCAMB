@@ -2575,7 +2575,7 @@
                     RedWin%dwinTD(j) = RedWin%wing(j) * ((1-beta)/(State%tau0 - tau) + gamma/(State%tau0 - tau)**2/(adot/a))
 
                     ! Potential gradient window function
-                    !RedWin%winGPhi(j) = RedWin%wing(j) * gamma/(adot/a)
+                    RedWin%winGPhi(j) = RedWin%wing(j) * gamma/(adot/a)
 
                     ! Velocity window function
                     RedWin%winD(j) = RedWin%wing(j) * (1  - 2._dl*gamma - 2._dl*(beta+1))

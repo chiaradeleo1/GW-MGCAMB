@@ -1406,7 +1406,7 @@
     real(dl) s(0:10), t(0:10)
     real(dl) counts_radial_source, counts_velocity_source, counts_density_source, counts_ISW_source, &
         counts_redshift_source, counts_timedelay_source, counts_potential_source
-    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source!CDL
+    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source, gw_gradpotential_source!CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1680,8 +1680,15 @@
                     gw_lsd_source = 0._dl
                 end if
 
-                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source + gw_lsd_source
-                !print*, 'sources=', sources(3+w_ix)
+                if (CP%SourceTerms%gw_gradpotential) then
+                    gw_gradpotential_source = W%dwinGPhi(j)*phi + W%winGPhi(j)*phidot
+                    !print*, 'sources=', gw_gradpotential_source
+                else
+                    gw_gradpotential_source = 0._dl
+                end if
+
+                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source + gw_lsd_source + gw_gradpotential_source
+                print*, 'total=', sources(3+w_ix)
             end if
         end associate
         
