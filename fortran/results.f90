@@ -2563,7 +2563,7 @@
                     gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot )
                     beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2  ) + &
                            2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 -2)
-                    
+                    print*, beta
                     
                     !window is n(a) where n is TOTAL not fractional number
                     RedWin%wing(j) = adot *window

@@ -1382,6 +1382,7 @@
 
     end function Get21cm_dTs
 
+    
 
     subroutine output_window_sources(EV, sources, y, yprime, &
         tau, a, adotoa, grho, gpres, &
@@ -1406,12 +1407,19 @@
     real(dl) s(0:10), t(0:10)
     real(dl) counts_radial_source, counts_velocity_source, counts_density_source, counts_ISW_source, &
         counts_redshift_source, counts_timedelay_source, counts_potential_source
-    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source, gw_gradpotential_source!CDL
+    real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source, gw_gradpotential_source, &
+            gw_potential_source !CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
     real(dl) Tmat,Trad, Delta_source, Delta_source2
     real(dl) xe, chi, polter_line
+    real(dl) :: gamma, beta !CDL
+    real(dl) :: adotdota !CDL
+
+    adotdota = 0._dl
+
+    call calculate_adotdota(State, adotdota) !CDL
 
     j = EV%OutputStep
     if (CP%SourceTerms%line_reionization) sources(2)=0
@@ -1643,6 +1651,10 @@
 
 
             elseif (W%kind == window_gw) then !CDL
+                gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) / adotoa )
+                beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adotoa) * adotdota*(adotoa)**2  ) + &
+                           2._dl/(State%tau0 - tau)/(adotoa) + adotdota*(adotoa)**2 -2)
+                
                 ! Density source
                 if(CP%SourceTerms%gw_density) then
                     gw_density_source = W%wing(j)*(clxc*W%Window%GetBias(k,a) + (W%comoving_density_ev(j) - 3*adotoa)*sigma/k)
@@ -1672,7 +1684,7 @@
                 else
                     gw_isw_source = 0._dl
                 end if
-
+                ! Luminosity space distortions
                 if (CP%SourceTerms%gw_lsd) then
                     gw_lsd_source = W%ddwinLSD(j)/k * sigma + W%dwinLSD(j)/k * (2.D0*etak/EV%Kf(1) - 4.D0*adotoa*sigma) + &
                                               W%winLSD(j)/k * ((4.D0*adotoa**2+gpres+grho/3.D0)*sigma - etak/adotoa*k**2/3.D0 - dgrho/adotoa/6.D0*k +(etak/adotoa*k**2/3.D0 + dgrho/adotoa/6.D0*k + dgq/2.D0 - 2.D0*etak*adotoa)/EV%Kf(1))
@@ -1680,6 +1692,20 @@
                     gw_lsd_source = 0._dl
                 end if
 
+                ! Potential source:
+                if (CP%SourceTerms%gw_potential) then
+                    gw_potential_source = W%wing(j)*(beta-1-gamma/adotoa/(State%tau0 - tau))*phi + W%wing(j)* gamma/adotoa*phidot + &
+                                                    W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(beta+1))*phi
+                        
+                        !print*, 'term2=',W%wing(j)* gamma/adotoa*phidot
+                        !print*, 'term3=', W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(beta+1))*phi
+                        print*, 'total=', gw_potential_source
+                else
+                    gw_potential_source = 0._dl
+                end if
+
+
+                !Potential Gradient source
                 if (CP%SourceTerms%gw_gradpotential) then
                     gw_gradpotential_source = W%dwinGPhi(j)*phi + W%winGPhi(j)*phidot
                     !print*, 'sources=', gw_gradpotential_source
@@ -1687,8 +1713,9 @@
                     gw_gradpotential_source = 0._dl
                 end if
 
-                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source + gw_lsd_source + gw_gradpotential_source
-                print*, 'total=', sources(3+w_ix)
+                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source + &
+                    gw_lsd_source + gw_gradpotential_source + gw_potential_source
+                
             end if
         end associate
         

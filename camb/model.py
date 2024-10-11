@@ -148,6 +148,7 @@ class SourceTermParams(CAMB_Structure):
         ("gw_velocity" , c_bool, "Non-redshift distortion velocity terms for gws"), #CDL
         ("gw_ISW", c_bool, "Include ISW terms for gws"), #CDL
         ("gw_lsd", c_bool, "Include Luminosity space distorsion terms for gws"), #CDL
+        ("gw_potential", c_bool, "Include potentials terms at gws aource"), #CDL
         ("gw_gradpotential", c_bool, "Include gradpotential distortions for gws")] #CDL
 
 
