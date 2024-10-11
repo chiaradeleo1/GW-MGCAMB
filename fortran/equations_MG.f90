@@ -1515,6 +1515,7 @@
 
                 if (CP%SourceTerms%counts_lensing) &
                     sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
+                    
             elseif (W%kind == window_21cm) then
                 if (CP%SourceTerms%line_basic) then
                     sources(3+w_ix)= exptau*(W%wing(j)*Delta_source + W%wing2(j)*Delta_source2 &
@@ -1715,6 +1716,12 @@
 
                 sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source + &
                     gw_lsd_source + gw_gradpotential_source + gw_potential_source
+
+                ! Lensing source
+                    if (CP%SourceTerms%gw_lensing) then
+                        sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)
+                        !print*, 'w_lens=', W%win_lens(j)
+                    end if
                 
             end if
         end associate

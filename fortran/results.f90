@@ -562,7 +562,8 @@
             !$OMP CRITICAL
             this%CP%Max_eta_k = max(this%CP%Max_eta_k, this%tau0*WindowKmaxForL(Win,this%CP,this%CP%max_l))
             if (Win%Window%source_type==window_21cm) this%CP%Do21cm = .true.
-            if (Win%Window%source_type==window_counts .and. P%SourceTerms%counts_lensing) then
+            if ((Win%Window%source_type==window_counts .and. P%SourceTerms%counts_lensing) .or. & 
+                (Win%Window%source_type==window_gw .and. P%SourceTerms%gw_lensing) ) then !CDL
                 this%num_extra_redshiftwindows = this%num_extra_redshiftwindows + 1
                 Win%mag_index = this%num_extra_redshiftwindows
             end if
@@ -1714,13 +1715,13 @@
     use StringUtils
     class(TThermoData) :: this
     class(CAMBdata), target :: State
-    !real(dl) :: adotdota  !CDL
     real(dl), intent(in) :: taumin
     integer nthermo
     real(dl) tau01,a0,barssc,dtau
     real(dl) tau,a,a2
     real(dl) adot,fe,thomc0
     real(dl) gamma, beta !CDL 
+    real(dl) :: adotdota  !CDL
     real(dl) dtbdla,vfi,cf1,maxvis, vis, z_scale
     integer ncount,i,j1,iv,ns
     real(dl), allocatable :: spline_data(:)
@@ -1730,7 +1731,7 @@
     real(dl) a_eq, rs_eq, tau_eq, rstar
     integer noutput
     Type(CalWins), dimension(:), allocatable, target :: RW
-    real(dl) awin_lens1(State%num_redshiftwindows),awin_lens2(State%num_redshiftwindows)
+    real(dl) awin_lens1(State%num_redshiftwindows),awin_lens2(State%num_redshiftwindows), awin_lens3(State%num_redshiftwindows),awin_lens4(State%num_redshiftwindows) !CDL
     real(dl) Tspin, Trad, rho_fac, window, tau_eps
     integer transfer_ix(State%CP%Transfer%PK_num_redshifts)
     integer RW_i, j2
@@ -1798,7 +1799,9 @@
         associate (RedWin => State%Redshift_w(RW_i))
             RedWin%tau_start = 0
             RedWin%tau_end = State%tau0
-            if (RedWin%kind == window_lensing .or.  RedWin%kind == window_counts .and. CP%SourceTerms%counts_lensing) then
+            if ((RedWin%kind == window_lensing ) .or. &
+                (RedWin%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
+                (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing)) then
                 allocate(RW(RW_i)%awin_lens(nthermo))
                 allocate(RW(RW_i)%dawin_lens(nthermo))
             end if
@@ -1828,6 +1831,8 @@
     !Do other stuff while recombination calculating
     awin_lens1=0
     awin_lens2=0
+    awin_lens3=0
+    awin_lens4=0
     transfer_ix =0
 
     call splini(spline_data,nthermo)
@@ -1898,8 +1903,10 @@
         a = this%scaleFactor(i)
         adot = 1/dtauda(State,a)
         this%adot(i) = adot
-        !adotdota = 0._dl !CDL
-        !Hdotdot = 0._dl
+        adotdota = 0._dl !CDL
+
+        call calculate_adotdota(State, adotdota) !CDL
+
         if (this%matter_verydom_tau ==0 .and. a > a_verydom) then
             this%matter_verydom_tau = tau
         end if
@@ -1921,6 +1928,21 @@
                             else
                                 Win%awin_lens(i) = 0
                             end if
+
+                        else if ( (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing) ) then !CDL
+                            if (State%tau0 - tau > 2) then
+                                gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot)
+                                beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2) + 2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 - 2)
+                                    
+                                dwing_lens =  adot * window * dtau
+                                awin_lens1(RW_i) = awin_lens1(RW_i) + dwing_lens
+                                awin_lens4(RW_i) = awin_lens4(RW_i) + (beta-1) * dwing_lens
+                                awin_lens2(RW_i) = awin_lens2(RW_i) + (beta-1) * dwing_lens/(State%tau0-tau)
+                                awin_lens3(RW_i) = awin_lens3(RW_i) + gamma/(adot/a)/(State%tau0-tau)**2 * adot * window * dtau
+                                Win%awin_lens(i) = awin_lens4(RW_i)/(State%tau0-tau) - awin_lens2(RW_i) + awin_lens3(RW_i)
+                            else
+                                Win%awin_lens(i) = 0
+                            end if
                         end if
 
                         if (RedWin%tau_start ==0 .and. winamp > 1e-8) then
@@ -1931,8 +1953,9 @@
                                 RW_i, RedWin%tau_start, RedWin%tau_end)
                         end if
                     else
-                        if (RedWin%kind == window_lensing .or.  RedWin%kind == window_counts &
-                            .and. CP%SourceTerms%counts_lensing) then
+                        if ( (RedWin%kind == window_lensing) .or. &
+                             (RedWin%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
+                             (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing) )then !CDL
                             Win%awin_lens(i)=0
                         end if
                     end if
@@ -1949,9 +1972,12 @@
         tau01 =tau
     end do
     do RW_i = 1, State%num_redshiftwindows
+
+        
         associate(Win => RW(RW_i))
-            if (State%Redshift_w(RW_i)%kind == window_lensing .or. &
-                State%Redshift_w(RW_i)%kind == window_counts .and. CP%SourceTerms%counts_lensing) then
+            if ( (State%Redshift_w(RW_i)%kind == window_lensing) .or. &
+                 (State%Redshift_w(RW_i)%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
+                 (State%Redshift_w(RW_i)%kind == window_gw .and. CP%SourceTerms%gw_lensing) ) then !CDL
                 this%has_lensing_windows = .true.
                 State%Redshift_w(RW_i)%has_lensing_window = .true.
                 if (FeedbackLevel>0)  write(*,'(I1," Int W              = ",f9.6)') RW_i, awin_lens1(RW_i)
@@ -2563,7 +2589,7 @@
                     gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot )
                     beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2  ) + &
                            2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 -2)
-                    print*, beta
+                    !print*, beta
                     
                     !window is n(a) where n is TOTAL not fractional number
                     RedWin%wing(j) = adot *window
@@ -2781,6 +2807,7 @@
             *this%dlntau)
 
         do RW_i=1, State%num_redshiftwindows
+            !print*, 'Hello', State%Redshift_w(RW_i)%has_lensing_window
             if (State%Redshift_w(RW_i)%has_lensing_window) then
                 associate(W => State%Redshift_W(RW_i), C=> RW(RW_i))
 

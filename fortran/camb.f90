@@ -377,7 +377,7 @@
         call Ini%Read('gw_lsd', P%SourceTerms%gw_lsd)
         call Ini%Read('gw_gradpotential', P%SourceTerms%gw_gradpotential)
         call Ini%Read('gw_potential', P%SourceTerms%gw_potential)
-        !call Ini%Read('gw_lensing', P%SourceTerms%gw_lensing)
+        call Ini%Read('gw_lensing', P%SourceTerms%gw_lensing)
         
     end if
 

@@ -75,6 +75,7 @@
         logical :: gw_lsd = .true. !CDL
         logical :: gw_potential = .true. !CDL
         logical :: gw_gradpotential = .true. !CDL
+        logical :: gw_lensing = .true. !CDL
 
     end type SourceTermParams
 
