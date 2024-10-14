@@ -149,7 +149,8 @@ class SourceTermParams(CAMB_Structure):
         ("gw_ISW", c_bool, "Include ISW terms for gws"), #CDL
         ("gw_lsd", c_bool, "Include Luminosity space distorsion terms for gws"), #CDL
         ("gw_potential", c_bool, "Include potentials terms at gws aource"), #CDL
-        ("gw_gradpotential", c_bool, "Include gradpotential distortions for gws")] #CDL
+        ("gw_gradpotential", c_bool, "Include gradpotential distortions for gws"), #CDL
+        ("gw_lensing", c_bool, "Include magnification bias for gws number counts")] #CDL
 
 
 class CustomSources(CAMB_Structure):

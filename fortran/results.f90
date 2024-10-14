@@ -1834,6 +1834,7 @@
     awin_lens3=0
     awin_lens4=0
     transfer_ix =0
+    !print*, awin_lens4
 
     call splini(spline_data,nthermo)
 
@@ -1914,6 +1915,7 @@
         if (State%num_redshiftwindows>0) then
             this%redshift_time(i) = z
             do RW_i = 1, State%num_redshiftwindows
+                !print*,  'awin_lens', awin_lens4(RW_i)
                 associate (Win => RW(RW_i), RedWin => State%Redshift_w(RW_i))
                     if (a > 1d-4) then
                         window = RedWin%Window%Window_f_a(a, winamp)
@@ -1925,11 +1927,13 @@
                                 awin_lens1(RW_i) = awin_lens1(RW_i) + dwing_lens
                                 awin_lens2(RW_i) = awin_lens2(RW_i) + dwing_lens/(State%tau0-tau)
                                 Win%awin_lens(i) = awin_lens1(RW_i)/(State%tau0-tau) - awin_lens2(RW_i)
+                                
                             else
                                 Win%awin_lens(i) = 0
                             end if
 
                         else if ( (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing) ) then !CDL
+                            !print*, 'awin_lens', awin_lens4(RW_i)
                             if (State%tau0 - tau > 2) then
                                 gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot)
                                 beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2) + 2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 - 2)
@@ -1940,6 +1944,7 @@
                                 awin_lens2(RW_i) = awin_lens2(RW_i) + (beta-1) * dwing_lens/(State%tau0-tau)
                                 awin_lens3(RW_i) = awin_lens3(RW_i) + gamma/(adot/a)/(State%tau0-tau)**2 * adot * window * dtau
                                 Win%awin_lens(i) = awin_lens4(RW_i)/(State%tau0-tau) - awin_lens2(RW_i) + awin_lens3(RW_i)
+                                
                             else
                                 Win%awin_lens(i) = 0
                             end if
@@ -2807,13 +2812,14 @@
             *this%dlntau)
 
         do RW_i=1, State%num_redshiftwindows
-            !print*, 'Hello', State%Redshift_w(RW_i)%has_lensing_window
+            
             if (State%Redshift_w(RW_i)%has_lensing_window) then
                 associate(W => State%Redshift_W(RW_i), C=> RW(RW_i))
 
                     W%win_lens(j2) = C%awin_lens(i)+d*(C%dawin_lens(i)+d*(3._dl*(C%awin_lens(i+1)-C%awin_lens(i)) &
                         -2._dl*C%dawin_lens(i)-C%dawin_lens(i+1)+d*(C%dawin_lens(i)+C%dawin_lens(i+1) &
                         +2._dl*(C%awin_lens(i)-C%awin_lens(i+1)))))
+                    !print*, 'W_lens' , C%dawin_lens(i)
                 end associate
             end if
         end do
