@@ -234,10 +234,10 @@ contains
 
        
 
-        ! Divide the cases here
+        ! Divide the cases here 
         if (( MG_flag == 1 .and. pure_MG_flag /= 3 ) &   ! generic mu-gamma parametrization
             .or. MG_flag == 2 &
-            .or. MG_flag == 3 .or. MG_flag == 6) then
+            .or. MG_flag == 3 .or. MG_flag == 6) then !CDL
 
 
             mg_cache%mu         = MGCAMB_Mu( a, mg_par_cache, mg_cache )
@@ -455,12 +455,12 @@ contains
             !> finally calculate Z
             mg_cache%z = mg_cache%sigma - 3._dl * mg_cache%etadot/mg_cache%k  
 
-            !> Calculate the Newtonian potential  
+            !> Calculate the Newtonian potential  !CDL 
             mg_cache%MG_psi = - mg_cache%mu * ( mg_cache%rhoDelta + 2._dl* mg_cache%dgpi)/(2._dl*mg_cache%k2) 
 
-            !> calculate the curvature perturbation potential 
+            !> calculate the curvature perturbation potential !CDL 
             mg_cache%MG_phi = mg_cache%gamma * mg_cache%MG_psi + mg_cache%mu* 1._dl*mg_cache%dgpi/mg_cache%k2 
-
+            !CDL 
             mg_cache%MG_phidot = mg_cache%etadot - mg_cache%adotoa * (mg_cache%MG_psi - mg_cache%adotoa * mg_cache%MG_alpha) &
                                 & - mg_cache%Hdot * mg_cache%MG_alpha  
 

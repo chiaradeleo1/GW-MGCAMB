@@ -1386,18 +1386,19 @@
 
     subroutine output_window_sources(EV, sources, y, yprime, &
         tau, a, adotoa, grho, gpres, &
-        k, etak, z, etakdot, phi, phidot, sigma, sigmadot, &
+        k, etak, z, etakdot, phi,mg_phi, mg_psi, phidot, sigma, sigmadot, &
         dgrho, clxg,clxb,clxc,clxnu, Delta_TM, Delta_xe,  &
         dgq, qg,  vb, qgdot, vbdot, &
         dgpi, pig, pigdot, diff_rhopi, &
         polter, polterdot, polterddot, octg, octgdot, E, Edot, &
         opacity, dopacity, ddopacity, visibility, dvisibility, ddvisibility, exptau)
+    use MGCAMB !CDL
     !Line of sight sources for number counts, lensing and 21cm redshift windows
     type(EvolutionVars) EV
     real(dl) y(EV%nvar), yprime(EV%nvar)
     real(dL), intent(out) :: sources(:)
     real(dL), intent(in) :: tau, a, adotoa, grho, gpres, &
-        k,etak, z, etakdot, phi, phidot, sigma, sigmadot, &
+        k,etak, z, etakdot, phi, mg_phi, mg_psi, phidot, sigma, sigmadot, &
         dgrho, clxg,clxb,clxc,clxnu,  &
         dgq, qg, vb, qgdot, vbdot, &
         dgpi, pig, pigdot, diff_rhopi, &
@@ -1416,7 +1417,8 @@
     real(dl) xe, chi, polter_line
     real(dl) :: gamma, beta !CDL
     real(dl) :: adotdota !CDL
-
+    
+	Type(MGCAMB_timestep_cache) :: mgcamb_cache !CDL
     adotdota = 0._dl
 
     call calculate_adotdota(State, adotdota) !CDL
@@ -1440,7 +1442,7 @@
     end if
 
     do w_ix = 1, State%num_redshiftwindows
-        !print*, 'num_redshiftwindows = ', State%num_redshiftwindows
+        
         associate (W => State%Redshift_W(w_ix))
 
             if (W%kind == window_lensing) then
@@ -1479,7 +1481,11 @@
 
                 if (CP%SourceTerms%counts_timedelay) then
                     !time delay; WinV is int g/chi
-                    counts_timedelay_source= 2*(1-2.5*W%Window%dlog10Ndm)*W%WinV(j)*2*phi
+                    if (MG_flag==0) then
+                        counts_timedelay_source= 2*(1-2.5*W%Window%dlog10Ndm)*W%WinV(j)*2*phi
+                    else
+                        counts_timedelay_source= 2*(1-2.5*W%Window%dlog10Ndm)*W%WinV(j)*(mg_phi+mg_psi) !CDL MG
+                    end if
                 else
                     counts_timedelay_source = 0
                 end if
@@ -1493,8 +1499,15 @@
 
                 if (CP%SourceTerms%counts_potential) then
                     !approx phi = psi
-                    counts_potential_source = ( phidot/adotoa + phi +(5*W%Window%dlog10Ndm-2)*phi ) * W%wing(j) &
-                        + phi * W%wingtau(j)
+                    if (MG_flag==0) then
+
+                        counts_potential_source = ( phidot/adotoa + phi +(5*W%Window%dlog10Ndm-2)*phi ) * W%wing(j) &
+                            + phi * W%wingtau(j)
+                    else 
+                        counts_potential_source = ( phidot/adotoa + mg_phi +(5*W%Window%dlog10Ndm-2)*mg_phi ) * W%wing(j) &
+                        + mg_phi * W%wingtau(j) !CDL MG
+
+                    end if
                 else
                     counts_potential_source = 0
                 end if
@@ -1513,8 +1526,13 @@
 
                 sources(3+w_ix)=sources(3+w_ix)/W%Fq
 
-                if (CP%SourceTerms%counts_lensing) &
-                    sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
+                if (CP%SourceTerms%counts_lensing) then
+                    if (MG_flag==0) then
+                        sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
+                    else
+                        sources(3+W%mag_index+State%num_redshiftwindows) = mg_phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm) !CDL MG
+                    end if
+                end if
                     
             elseif (W%kind == window_21cm) then
                 if (CP%SourceTerms%line_basic) then
@@ -1665,7 +1683,13 @@
 
                 ! Time delay source:
                 if (CP%SourceTerms%gw_timedelay) then
-                    gw_timedelay_source = W%winTD(j)*2*phi
+                    if (MG_flag==0) then
+                        gw_timedelay_source = W%winTD(j)*2*phi
+                    else
+                        
+                        gw_timedelay_source = W%winTD(j)*(mg_phi+mg_psi) !CDL_MG
+                    end if
+                    !gw_timedelay_source = W%winTD(j)*2*mgcamb_cache%MG_phi
                 else
                     gw_timedelay_source = 0._dl
                 end if
@@ -1695,12 +1719,14 @@
 
                 ! Potential source:
                 if (CP%SourceTerms%gw_potential) then
-                    gw_potential_source = W%wing(j)*(beta-1-gamma/adotoa/(State%tau0 - tau))*phi + W%wing(j)* gamma/adotoa*phidot + &
+                    if (MG_flag==0) then
+                        gw_potential_source = W%wing(j)*(beta-1-gamma/adotoa/(State%tau0 - tau))*phi + W%wing(j)* gamma/adotoa*phidot + &
                                                     W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(beta+1))*phi
-                        
-                        !print*, 'term2=',W%wing(j)* gamma/adotoa*phidot
-                        !print*, 'term3=', W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(beta+1))*phi
-                        print*, 'total=', gw_potential_source
+                    else
+                        gw_potential_source = W%wing(j)*(beta-1-gamma/adotoa/(State%tau0 - tau))*phi + W%wing(j)* gamma/adotoa*phidot + &
+                                                    W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(beta+1))*mg_phi !CDL MG
+                    end if
+                    print*, 'total=', gw_potential_source
                 else
                     gw_potential_source = 0._dl
                 end if
@@ -1708,7 +1734,11 @@
 
                 !Potential Gradient source
                 if (CP%SourceTerms%gw_gradpotential) then
-                    gw_gradpotential_source = W%dwinGPhi(j)*phi + W%winGPhi(j)*phidot
+                    if (MG_flag==0) then
+                        gw_gradpotential_source = W%dwinGPhi(j)*phi + W%winGPhi(j)*phidot
+                    else
+                        gw_gradpotential_source = W%dwinGPhi(j)*mg_phi + W%winGPhi(j)*phidot !CDL MG
+                    end if
                     !print*, 'sources=', gw_gradpotential_source
                 else
                     gw_gradpotential_source = 0._dl
@@ -1719,8 +1749,12 @@
 
                 ! Lensing source
                     if (CP%SourceTerms%gw_lensing) then
-                        sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)
-                        !print*, 'w_lens=', W%win_lens(j)
+                        if (MG_flag==0) then
+                            sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)
+                        else
+                            sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j) !CDL MG
+                        end if
+                        print*, 'w_lens=', W%win_lens(j)
                     end if
                 
             end if
@@ -2324,7 +2358,7 @@
     real(dl) Delta_xe, Tspin, tau_eps, tau_fac, Tb
     integer lineoff,lineoffpol
     !Variables for source calculation
-    real(dl) diff_rhopi, pidot_sum, dgpi_diff, phi
+    real(dl) diff_rhopi, pidot_sum, dgpi_diff, phi, mg_phi, mg_psi
     real(dl) E(2:3), Edot(2:3)
     real(dl) phidot, polterdot, polterddot, octg, octgdot
     real(dl) ddopacity, visibility, dvisibility, ddvisibility, exptau, lenswindow
@@ -3218,7 +3252,11 @@
             psiN = -((dgrho +3*dgq*adotoa/k)/EV%Kf(1) + 2._dl*dgpi)/(2*k2)
             phiN = -psiN - ((dgrho +3*dgq*adotoa/k)/EV%Kf(1) + dgpi)/k2
         else
-           phi = (mgcamb_cache%MG_psi+mgcamb_cache%MG_phi)/2._dl
+           !phi = (mgcamb_cache%MG_psi+mgcamb_cache%MG_phi)/2._dl
+           mg_phi = mgcamb_cache%MG_phi
+           mg_psi = mgcamb_cache%MG_psi
+           !Qui mg_phi e mg_psi sono stampati bene
+           !print*, 'hello', mg_phi, mg_psi
         end if
         !< MGCAMB MOD END
 
@@ -3364,7 +3402,7 @@
             if (State%num_redshiftwindows > 0) then
                 call output_window_sources(EV, EV%OutputSources, ay, ayprime, &
                     tau, a, adotoa, grho, gpres, &
-                    k, etak, z, ayprime(ix_etak), phi, phidot, sigma, sigmadot, &
+                    k, etak, z, ayprime(ix_etak), phi, mg_phi, mg_psi, phidot, sigma, sigmadot, &
                     dgrho, clxg,clxb,clxc,clxnu, Delta_TM, Delta_xe, &
                     dgq, qg, vb, qgdot, vbdot, &
                     dgpi, pig, pigdot, diff_rhopi, &
@@ -3444,7 +3482,7 @@
                 mgcamb_cache%sigma      = sigma
                 mgcamb_cache%sigmadot   = sigmadot
                 mgcamb_cache%etadot     = ayprime(2)/k
-                mgcamb_cache%MG_Psi     = 0._dl         !< this needs to be changed
+                mgcamb_cache%MG_Psi     = 0._dl         !< this needs to be changed !CDL
                 mgcamb_cache%MG_Phi     = 0._dl         !< this needs to be changed
                 mgcamb_cache%MG_Psidot  = 0._dl         !< this needs to be changed
                 mgcamb_cache%MG_Phidot  = 0._dl         !< this needs to be changed
