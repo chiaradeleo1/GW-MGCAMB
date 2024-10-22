@@ -1386,7 +1386,7 @@
 
     subroutine output_window_sources(EV, sources, y, yprime, &
         tau, a, adotoa, grho, gpres, &
-        k, etak, z, etakdot, phi,mg_phi, mg_psi, phidot, sigma, sigmadot, &
+        k, etak, z, etakdot, phi,mg_phi, mg_psi, phidot, mg_phidot,mg_psidot,sigma, sigmadot, &
         dgrho, clxg,clxb,clxc,clxnu, Delta_TM, Delta_xe,  &
         dgq, qg,  vb, qgdot, vbdot, &
         dgpi, pig, pigdot, diff_rhopi, &
@@ -1398,7 +1398,7 @@
     real(dl) y(EV%nvar), yprime(EV%nvar)
     real(dL), intent(out) :: sources(:)
     real(dL), intent(in) :: tau, a, adotoa, grho, gpres, &
-        k,etak, z, etakdot, phi, mg_phi, mg_psi, phidot, sigma, sigmadot, &
+        k,etak, z, etakdot, phi, mg_phi, mg_psi, phidot, mg_phidot, mg_psidot, sigma, sigmadot, &
         dgrho, clxg,clxb,clxc,clxnu,  &
         dgq, qg, vb, qgdot, vbdot, &
         dgpi, pig, pigdot, diff_rhopi, &
@@ -1491,8 +1491,12 @@
                 end if
 
                 if (CP%SourceTerms%counts_ISW) then
+                    if (MG_flag==0) then
                     !WinF is int wingtau
-                    counts_ISW_source = W%WinF(j)*2*phidot
+                        counts_ISW_source = W%WinF(j)*2*phidot
+                    else 
+                        counts_ISW_source = W%WinF(j)*(mg_phidot+mg_psidot) !CDL MG
+                    end if
                 else
                     counts_ISW_source = 0
                 end if
@@ -1705,7 +1709,11 @@
 
                 ! ISW source:
                 if (CP%SourceTerms%gw_ISW) then
-                    gw_isw_source = W%WinISW(j)*2*phidot
+                    if (MG_flag==0) then
+                        gw_isw_source = W%WinISW(j)*2*phidot
+                    else 
+                        gw_isw_source = W%WinISW(j)*(mg_phidot+mg_psidot) !CDL MG
+                    end if
                 else
                     gw_isw_source = 0._dl
                 end if
@@ -2362,7 +2370,7 @@
     real(dl) E(2:3), Edot(2:3)
     real(dl) phidot, polterdot, polterddot, octg, octgdot
     real(dl) ddopacity, visibility, dvisibility, ddvisibility, exptau, lenswindow
-    real(dl) ISW, quadrupole_source, doppler, monopole_source, tau0, ang_dist
+    real(dl) ISW, quadrupole_source, doppler, monopole_source, tau0, ang_dist, mg_phidot, mg_psidot
     real(dl) dgrho_de, dgq_de, cs2_de
 
     real(dl) dgrhoc, dgqc
@@ -3347,8 +3355,8 @@
 
                 ISW = exptau * (mgcamb_cache%MG_ISW - 2._dl*MGDE_ISW)
 				phidot = (mgcamb_cache%MG_ISW - 2._dl*MGDE_ISW)/2._dl
-
-                sigmadot = mgcamb_cache%sigmadot
+                mg_phidot = mgcamb_cache%MG_phidot !CDL MG
+                mg_psidot = mgcamb_cache%MG_psidot !CDL MG
 
                 polter      = pig/10+9._dl/15*E(2)
                 polterdot   = 9._dl/15._dl*Edot(2) + 0.1_dl*pigdot
@@ -3402,7 +3410,7 @@
             if (State%num_redshiftwindows > 0) then
                 call output_window_sources(EV, EV%OutputSources, ay, ayprime, &
                     tau, a, adotoa, grho, gpres, &
-                    k, etak, z, ayprime(ix_etak), phi, mg_phi, mg_psi, phidot, sigma, sigmadot, &
+                    k, etak, z, ayprime(ix_etak), phi, mg_phi, mg_psi, phidot, mg_phidot, mg_psidot, sigma, sigmadot, &
                     dgrho, clxg,clxb,clxc,clxnu, Delta_TM, Delta_xe, &
                     dgq, qg, vb, qgdot, vbdot, &
                     dgpi, pig, pigdot, diff_rhopi, &
