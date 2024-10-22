@@ -20,3 +20,4 @@ fortran/Releaselib/
 camb
 /build
 /camb.egg-info
+test*ini
