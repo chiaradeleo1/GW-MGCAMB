@@ -1446,7 +1446,11 @@
         associate (W => State%Redshift_W(w_ix))
 
             if (W%kind == window_lensing) then
-                sources(3+w_ix) =-2*phi*W%win_lens(j)
+                if (MG_flag==0) then
+                    sources(3+w_ix) =-2*phi*W%win_lens(j) !CDL MG
+                else
+                    sources(3+w_ix) =-(mg_phi+mg_psi)*W%win_lens(j)
+                end if
             elseif (W%kind == window_counts) then
                 !assume zero velocity bias and relevant tracer is CDM perturbation
                 !neglect anisotropic stress in some places
@@ -1534,7 +1538,7 @@
                     if (MG_flag==0) then
                         sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
                     else
-                        sources(3+W%mag_index+State%num_redshiftwindows) = mg_phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm) !CDL MG
+                        sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)*(2-5*W%Window%dlog10Ndm) !CDL MG
                     end if
                 end if
                     
