@@ -264,7 +264,7 @@
     real(dl) nmassive
     character(LEN=*), intent(inout) :: ErrMsg
     character(LEN=:), allocatable :: NumStr, S, DarkEneryModel, RecombinationModel
-    logical :: DoCounts, DoGws !CDL
+    logical :: DoCounts, DoGws, DoGwsLens !CDL
     !> MGCAMB MOD START
     character(len=:), allocatable :: outroot
     !< MGCAMB MOD END
@@ -293,6 +293,7 @@
     P%Do21cm = Ini%Read_Logical('Do21cm', .false.)
     DoCounts = .false.
     DoGws = .false. !CDL
+    DoGwsLens = .false. !CDL
     do i=1, num_redshiftwindows
         allocate(TGaussianSourceWindow::P%SourceWindows(i)%Window)
         select type (RedWin=>P%SourceWindows(i)%Window)
@@ -304,7 +305,9 @@
             elseif (S == 'counts') then
                 RedWin%source_type = window_counts
             elseif (S == 'gws') then
-                    RedWin%source_type = window_gw !CDL
+                    RedWin%source_type = window_gw !CDL gwcounts
+            elseif (S == 'gws_lens') then
+                    RedWin%source_type = window_gwlens !CDL gwlensing
             elseif (S == 'lensing') then
                 RedWin%source_type = window_lensing
             else
@@ -333,6 +336,9 @@
                 DoGws = .true.
                 RedWin%bias = Ini%Read_Double_Array('redshift_bias', i) 
                 RedWin%dlog10Ndm = Ini%Read_Double_Array('redshift_dlog10Ndm', i ,0.d0) 
+            end if
+            if (RedWin%source_type == window_gwlens) then !CDL forse glielo passiamo come parametro esterno?
+                DoGwsLens = .true.
             end if
         class default
             call MpiStop('Probable compiler bug')
@@ -381,6 +387,9 @@
         
     end if
 
+    if (DoGwsLens) then !CDL
+        call Ini%Read('gwlens_volume', P%SourceTerms%gwlens_volume)
+    end if
 
     P%OutputNormalization=outNone
 

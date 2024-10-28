@@ -1410,6 +1410,7 @@
         counts_redshift_source, counts_timedelay_source, counts_potential_source
     real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source, gw_gradpotential_source, &
             gw_potential_source !CDL
+    real(dl) gwlens_volume_source !CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1538,6 +1539,7 @@
                 if (CP%SourceTerms%counts_lensing) then
                     if (MG_flag==0) then
                         sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
+                        
                     else
                         sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)*(2-5*W%Window%dlog10Ndm) !CDL MG
                     end if
@@ -1761,18 +1763,38 @@
                     gw_lsd_source + gw_gradpotential_source + gw_potential_source
 
                 ! Lensing source
-                    if (CP%SourceTerms%gw_lensing) then
+                if (CP%SourceTerms%gw_lensing) then
                         
-                        if (MG_flag==0) then
+                    if (MG_flag==0) then
                             !print*, 'w_lens=', W%win_lens(j)
-                            sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)
-                        else
-                            sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j) !CDL MG
-                        end if
-                        
+                        sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)
+                    else
+                        sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j) !CDL MG
                     end if
+                end if
+
+            elseif (W%kind == window_gwlens) then !CDL
+ 
+                    !volume source 
+                if (CP%SourceTerms%gwlens_volume) then
+                        
+                    if (MG_flag==0) then
+                            
+                        gwlens_volume_source = -W%wing(j)*2*phi
+                        
+                    else
+                        gwlens_volume_source = -W%wing(j)*(mg_phi+mg_psi) !CDL MG
+                    end if
+                else
+                    gwlens_volume_source = 0._dl
+                    
+                end if
+
+                sources(3+w_ix)= gwlens_volume_source
+                sources(3+w_ix)=sources(3+w_ix)/W%Fq
                 
-            end if
+            end if 
+
         end associate
         
     end do

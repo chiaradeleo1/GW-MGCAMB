@@ -4,7 +4,7 @@
     use MpiUtils
     implicit none
 
-    integer, parameter :: window_21cm = 1, window_counts = 2, window_lensing = 3, window_gw = 4 !CDL
+    integer, parameter :: window_21cm = 1, window_counts = 2, window_lensing = 3, window_gw = 4, window_gwlens = 5 !CDL
 
     Type, extends(TPythonInterfacedClass) :: TSourceWindow
         integer :: source_type = window_counts
@@ -68,14 +68,15 @@
         logical :: line_reionization = .false.
         logical :: use_21cm_mK = .true.
         logical :: gw_density = .true. !CDL
-        logical :: gw_timedelay = .true. !CDL
+        logical :: gw_timedelay = .false. !CDL
         logical :: gw_evolve = .false. !CDL
-        logical :: gw_velocity = .true. !CDL
-        logical :: gw_ISW = .true. !CDL
-        logical :: gw_lsd = .true. !CDL
-        logical :: gw_potential = .true. !CDL
-        logical :: gw_gradpotential = .true. !CDL
-        logical :: gw_lensing = .true. !CDL
+        logical :: gw_velocity = .false. !CDL
+        logical :: gw_ISW = .false. !CDL
+        logical :: gw_lsd = .false. !CDL
+        logical :: gw_potential = .false. !CDL
+        logical :: gw_gradpotential = .false. !CDL
+        logical :: gw_lensing = .false. !CDL
+        logical :: gwlens_volume = .false. !CDL
 
     end type SourceTermParams
 

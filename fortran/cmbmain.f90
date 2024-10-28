@@ -485,9 +485,10 @@
                 if (W%kind == window_lensing .or. W%kind == window_counts &
                     .and. CP%SourceTerms%counts_lensing) then
                     n2 = State%TimeSteps%npoints - 1
-
+                        
                 else if (W%kind == window_gw .and. CP%SourceTerms%gw_lensing) then !CDL
                     n2 = State%TimeSteps%npoints - 1
+                
                 else
                     n2 = min(State%TimeSteps%npoints - 1, State%TimeSteps%IndexOf(W%tau_end))
                 end if

@@ -1914,7 +1914,8 @@
         z= 1._dl/a-1._dl
         if (State%num_redshiftwindows>0) then
             this%redshift_time(i) = z
-            do RW_i = 1, State%num_redshiftwindows !CDL (1) PER AVERE IL TERMINE DI LENSING DIVERSO DA NAN BISOGNA PRINT QUI E IN (2)
+            do RW_i = 1, State%num_redshiftwindows 
+                !print*, 'awin_lens', awin_lens4(RW_i)!CDL (1) PER AVERE IL TERMINE DI LENSING DIVERSO DA NAN BISOGNA PRINT QUI E IN (2)
                 associate (Win => RW(RW_i), RedWin => State%Redshift_w(RW_i))
                     if (a > 1d-4) then
                         window = RedWin%Window%Window_f_a(a, winamp)
@@ -1932,7 +1933,7 @@
                             end if
 
                         else if ( (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing) ) then !CDL
-                            print*, 'awin_lens', awin_lens4(RW_i) !CDL (2) PER AVERE IL TERMINE DI LENSING DIVERSO DA NAN BISOGNA PRINT QUI E IN (1)
+                            !print*, 'awin_lens', awin_lens4(RW_i) !CDL (2) PER AVERE IL TERMINE DI LENSING DIVERSO DA NAN BISOGNA PRINT QUI E IN (1)
                             if (State%tau0 - tau > 2) then
                                 gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot)
                                 beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2) + 2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 - 2)
@@ -2621,6 +2622,9 @@
                             RedWin%comoving_density_ev(j) = 0
                         end if
                     end if
+                elseif (RedWin%kind == window_gwlens) then !CDL
+                    
+                    RedWin%wing(j) = adot *window
 
                 end if
             end associate
