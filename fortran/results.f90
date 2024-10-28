@@ -1914,8 +1914,7 @@
         z= 1._dl/a-1._dl
         if (State%num_redshiftwindows>0) then
             this%redshift_time(i) = z
-            do RW_i = 1, State%num_redshiftwindows
-                !print*,  'awin_lens', awin_lens4(RW_i)
+            do RW_i = 1, State%num_redshiftwindows !CDL (1) PER AVERE IL TERMINE DI LENSING DIVERSO DA NAN BISOGNA PRINT QUI E IN (2)
                 associate (Win => RW(RW_i), RedWin => State%Redshift_w(RW_i))
                     if (a > 1d-4) then
                         window = RedWin%Window%Window_f_a(a, winamp)
@@ -1933,7 +1932,7 @@
                             end if
 
                         else if ( (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing) ) then !CDL
-                            !print*, 'awin_lens', awin_lens4(RW_i)
+                            print*, 'awin_lens', awin_lens4(RW_i) !CDL (2) PER AVERE IL TERMINE DI LENSING DIVERSO DA NAN BISOGNA PRINT QUI E IN (1)
                             if (State%tau0 - tau > 2) then
                                 gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot)
                                 beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2) + 2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 - 2)
@@ -2614,6 +2613,15 @@
                     ! LSD window function
                     RedWin%winLSD(j) = RedWin%wing(j) * gamma/(adot/a) * 2._dl
 
+                    if (State%CP%SourceTerms%gw_evolve) then !CDL
+                        back_count_tmp(j,i) =  RedWin%Window%counts_background_z(1/a-1)/a
+                        if (tau < State%tau0 -0.1) then
+                            RedWin%comoving_density_ev(j) = back_count_tmp(j,i)*(adot/a)/(State%tau0 - tau)**2
+                        else
+                            RedWin%comoving_density_ev(j) = 0
+                        end if
+                    end if
+
                 end if
             end associate
         end do
@@ -2706,7 +2714,32 @@
             elseif (RedWin%kind == window_gw) then !CDL
 
                 if (State%CP%SourceTerms%gw_evolve) then !CDL
-                    print*, 'gw_evolve not implemented yet!'
+                    call spline(TimeSteps%points(jstart),back_count_tmp(jstart,i),ninterp,spl_large,spl_large,tmp)
+                    call spline_deriv(TimeSteps%points(jstart),back_count_tmp(jstart,i),tmp,tmp2(jstart),ninterp)
+                    do ix = jstart, TimeSteps%npoints
+                        if (RedWin%Wing(ix)==0._dl) then
+                            RedWin%Wingtau(ix) = 0
+                        else
+                            !evo bias is computed with total derivative
+                            RedWin%Wingtau(ix) =  -tmp2(ix) * RedWin%Wing(ix) / (back_count_tmp(ix,i)*hubble_tmp(ix)) &
+                                !+ 5*RedWin%dlog10Ndm * ( RedWin%Wing(ix)- int_tmp(ix,i)/hubble_tmp(ix))
+                                !The correction from total to partial derivative takes 1/adot(tau0-tau) cancels
+                                + 10*RedWin%Window%dlog10Ndm * RedWin%Wing(ix)
+                        end if
+                    end do
+
+                    !comoving_density_ev is d log(a^3 n_s)/d eta * window
+                    call spline(TimeSteps%points(jstart),RedWin%comoving_density_ev(jstart),ninterp,spl_large,spl_large,tmp)
+                    call spline_deriv(TimeSteps%points(jstart),RedWin%comoving_density_ev(jstart),tmp,tmp2(jstart),ninterp)
+                    do ix = jstart, TimeSteps%npoints
+                        if (RedWin%Wing(ix)==0._dl) then
+                            RedWin%comoving_density_ev(ix) = 0
+                        elseif (RedWin%comoving_density_ev(ix)/=0._dl) then
+                            !correction needs to be introduced from total derivative to partial derivative
+                            RedWin%comoving_density_ev(ix) =   tmp2(ix) / RedWin%comoving_density_ev(ix) &
+                                -5*RedWin%Window%dlog10Ndm * ( hubble_tmp(ix) + int_tmp(ix,i)/RedWin%Wing(ix))
+                        end if
+                    end do
                 else
                     !print*, 'Hello'
                     RedWin%comoving_density_ev=0
@@ -2937,7 +2970,7 @@
         !Turn on limber when k is a scale smaller than window width
         if (W%kind==window_lensing) then
             ell_limb = max(CP%SourceTerms%limber_phi_lmin,nint(50*LimBoost))
-        else if (W%kind==window_gw) then !CDL
+        else if (W%kind==window_gw) then !CDL limber
             ell_limb = max(CP%SourceTerms%limber_phi_lmin,nint(50*LimBoost),nint(LimBoost*6*W%chi0/W%sigma_tau))
         else
             ell_limb = max(CP%SourceTerms%limber_phi_lmin, nint(LimBoost*6*W%chi0/W%sigma_tau))

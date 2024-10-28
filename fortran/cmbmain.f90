@@ -455,6 +455,7 @@
         end if
 
         ell_needed = ThisCT%ls%l(ThisCT%ls%nl)
+        
         do ell = 1, ThisCT%ls%nl
             if (ThisCT%ls%l(ell) >= ell_limb) then
                 ThisCT%limber_l_min(s_ix) =  ell

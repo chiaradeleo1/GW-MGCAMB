@@ -1446,6 +1446,7 @@
         associate (W => State%Redshift_W(w_ix))
 
             if (W%kind == window_lensing) then
+                
                 if (MG_flag==0) then
                     sources(3+w_ix) =-2*phi*W%win_lens(j) !CDL MG
                 else
@@ -1761,12 +1762,14 @@
 
                 ! Lensing source
                     if (CP%SourceTerms%gw_lensing) then
+                        
                         if (MG_flag==0) then
+                            !print*, 'w_lens=', W%win_lens(j)
                             sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)
                         else
                             sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j) !CDL MG
                         end if
-                        print*, 'w_lens=', W%win_lens(j)
+                        
                     end if
                 
             end if
