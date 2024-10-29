@@ -389,6 +389,7 @@
 
     if (DoGwsLens) then !CDL
         call Ini%Read('gwlens_volume', P%SourceTerms%gwlens_volume)
+        call Ini%Read('gwlens_sw', P%SourceTerms%gwlens_sw)
     end if
 
     P%OutputNormalization=outNone

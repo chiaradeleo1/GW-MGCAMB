@@ -77,7 +77,7 @@
         logical :: gw_gradpotential = .false. !CDL
         logical :: gw_lensing = .false. !CDL
         logical :: gwlens_volume = .false. !CDL
-
+        logical :: gwlens_sw = .false. !CDL
     end type SourceTermParams
 
     Type TRedWin !internal type

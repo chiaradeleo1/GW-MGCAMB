@@ -2591,28 +2591,12 @@
 
                 elseif (RedWin%kind == window_gw) then !CDL
                     
-                    gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot )
-                    beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2  ) + &
-                           2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 -2)
-                    !print*, beta
+                
                     
                     !window is n(a) where n is TOTAL not fractional number
                     RedWin%wing(j) = adot *window
                     
-                    ! ISW window function
-                    RedWin%dwinISW(j) = RedWin%wing(j) * (2._dl * (beta+1))
-
-                    ! TD window function
-                    RedWin%dwinTD(j) = RedWin%wing(j) * ((1-beta)/(State%tau0 - tau) + gamma/(State%tau0 - tau)**2/(adot/a))
-
-                    ! Potential gradient window function
-                    RedWin%winGPhi(j) = RedWin%wing(j) * gamma/(adot/a)
-
-                    ! Velocity window function
-                    RedWin%winD(j) = RedWin%wing(j) * (1  - 2._dl*gamma - 2._dl*(beta+1))
-
-                    ! LSD window function
-                    RedWin%winLSD(j) = RedWin%wing(j) * gamma/(adot/a) * 2._dl
+                
 
                     if (State%CP%SourceTerms%gw_evolve) then !CDL
                         back_count_tmp(j,i) =  RedWin%Window%counts_background_z(1/a-1)/a
@@ -2622,6 +2606,8 @@
                             RedWin%comoving_density_ev(j) = 0
                         end if
                     end if
+
+                    
                 elseif (RedWin%kind == window_gwlens) then !CDL
                     
                     RedWin%wing(j) = adot *window
