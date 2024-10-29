@@ -152,7 +152,9 @@ class SourceTermParams(CAMB_Structure):
         ("gw_gradpotential", c_bool, "Include gradpotential distortions for gws"), #CDL
         ("gw_lensing", c_bool, "Include magnification bias for gws number counts"), #CDL
         ("gwlens_volume", c_bool, "Include the GW lensing amplitude volume source"), #CDL
-        ("gwlens_sw", c_bool, "Include the GW lensing amplitude Sachs-Wolfe source")] #CDL
+        ("gwlens_sw", c_bool, "Include the GW lensing amplitude Sachs-Wolfe source"),
+        ("gwlens_ISW", c_bool, "Include the GW lensing amplitude ISW source"), #CDL
+        ("gwlens_TD", c_bool, "Include the GW lensing amplitude TD source")] #CDL
     
 
 

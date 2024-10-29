@@ -391,6 +391,7 @@
         call Ini%Read('gwlens_volume', P%SourceTerms%gwlens_volume)
         call Ini%Read('gwlens_sw', P%SourceTerms%gwlens_sw)
         call Ini%Read('gwlens_ISW', P%SourceTerms%gwlens_ISW)
+        call Ini%Read('gwlens_TD', P%SourceTerms%gwlens_TD)
     end if
 
     P%OutputNormalization=outNone

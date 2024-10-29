@@ -2622,6 +2622,15 @@
                 elseif (RedWin%kind == window_gwlens) then !CDL
                     
                     RedWin%wing(j) = adot *window
+                    ! winV is window/chi for the time delay term
+                    RedWin%WinV(j) = 0
+                    
+                    ! int_tmp is window/chi
+                    if (tau < State%tau0 -0.1) then
+                        int_tmp(j,i) = RedWin%wing(j)/(State%tau0 - tau)
+                    else
+                        int_tmp(j,i)=0
+                    end if
 
                 end if
             end associate

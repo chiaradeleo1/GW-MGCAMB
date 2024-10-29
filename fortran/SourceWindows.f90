@@ -79,6 +79,7 @@
         logical :: gwlens_volume = .false. !CDL
         logical :: gwlens_sw = .false. !CDL
         logical :: gwlens_ISW = .false. !CDL
+        logical :: gwlens_TD = .false. !CDL
     end type SourceTermParams
 
     Type TRedWin !internal type
