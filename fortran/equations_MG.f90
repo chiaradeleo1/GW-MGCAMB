@@ -1410,7 +1410,7 @@
         counts_redshift_source, counts_timedelay_source, counts_potential_source
     real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source, gw_gradpotential_source, &
             gw_potential_source !CDL
-    real(dl) gwlens_volume_source, gwlens_sw_source !CDL
+    real(dl) gwlens_volume_source, gwlens_sw_source, gwlens_ISW_source !CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1805,7 +1805,23 @@
                     
                 end if
 
-                sources(3+w_ix)= gwlens_volume_source + gwlens_sw_source
+                    !Integrated Sachs-Wolfe source 
+                if (CP%SourceTerms%gwlens_ISW) then
+                        
+                    if (MG_flag==0) then
+                            
+                        gwlens_ISW_source =  - W%WinF(j)*2*phidot
+                        print*, 'Window=',  W%WinF(j)
+                        
+                    else
+                        gwlens_ISW_source = - W%WinF(j)*(mg_phidot+mg_psidot) !CDL MG
+                    end if
+                else
+                    gwlens_ISW_source = 0._dl
+                    
+                end if
+
+                sources(3+w_ix)= gwlens_volume_source + gwlens_sw_source + gwlens_ISW_source
                 sources(3+w_ix)=sources(3+w_ix)/W%Fq
                 
             end if 
