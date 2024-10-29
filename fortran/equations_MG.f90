@@ -1410,7 +1410,7 @@
         counts_redshift_source, counts_timedelay_source, counts_potential_source
     real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source, gw_gradpotential_source, &
             gw_potential_source !CDL
-    real(dl) gwlens_volume_source, gwlens_sw_source, gwlens_ISW_source, gwlens_TD_source !CDL
+    real(dl) gwlens_volume_source, gwlens_sw_source, gwlens_ISW_source, gwlens_TD_source, gwlens_source !CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1774,7 +1774,7 @@
                 end if
 
             elseif (W%kind == window_gwlens) then !CDL
- 
+                
                     !volume source 
                 if (CP%SourceTerms%gwlens_volume) then
                         
@@ -1837,8 +1837,23 @@
                     
                 end if
 
-                sources(3+w_ix)= gwlens_volume_source + gwlens_sw_source + gwlens_ISW_source + gwlens_TD_source
+                sources(3+w_ix)=  gwlens_volume_source + gwlens_sw_source + gwlens_ISW_source + gwlens_TD_source
                 sources(3+w_ix)=sources(3+w_ix)/W%Fq
+                
+                if (CP%SourceTerms%gwlens_convergence) then
+                    if (MG_flag==0) then
+                        sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)
+                            
+                    else
+                        sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
+                    end if
+                else 
+                    print*, 'ATTENTION: !!YOU CANNOT USE GW-WL SETTING CONVERGENCE OFF!! PLEASE SET gwlens_convergence = True'
+                        stop
+                end if 
+            
+                
+
                 
             end if 
 

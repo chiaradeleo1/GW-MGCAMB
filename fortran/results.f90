@@ -563,7 +563,8 @@
             this%CP%Max_eta_k = max(this%CP%Max_eta_k, this%tau0*WindowKmaxForL(Win,this%CP,this%CP%max_l))
             if (Win%Window%source_type==window_21cm) this%CP%Do21cm = .true.
             if ((Win%Window%source_type==window_counts .and. P%SourceTerms%counts_lensing) .or. & 
-                (Win%Window%source_type==window_gw .and. P%SourceTerms%gw_lensing) ) then !CDL
+                (Win%Window%source_type==window_gw .and. P%SourceTerms%gw_lensing) .or. &
+                (Win%Window%source_type==window_gwlens)) then !CDL
                 this%num_extra_redshiftwindows = this%num_extra_redshiftwindows + 1
                 Win%mag_index = this%num_extra_redshiftwindows
             end if
@@ -1801,7 +1802,8 @@
             RedWin%tau_end = State%tau0
             if ((RedWin%kind == window_lensing ) .or. &
                 (RedWin%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
-                (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing)) then
+                (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing) .or. &
+                (RedWin%kind == window_gwlens)) then
                 allocate(RW(RW_i)%awin_lens(nthermo))
                 allocate(RW(RW_i)%dawin_lens(nthermo))
             end if
@@ -1920,8 +1922,9 @@
                     if (a > 1d-4) then
                         window = RedWin%Window%Window_f_a(a, winamp)
 
-                        if  (RedWin%kind == window_lensing .or.  RedWin%kind == window_counts  &
-                            .and. CP%SourceTerms%counts_lensing) then
+                        if  (RedWin%kind == window_lensing .or. &
+                            (RedWin%kind == window_counts  .and. CP%SourceTerms%counts_lensing) .or. &
+                            (RedWin%kind == window_gwlens)) then
                             if (State%tau0 - tau > 2) then
                                 dwing_lens =  adot * window *dtau
                                 awin_lens1(RW_i) = awin_lens1(RW_i) + dwing_lens
@@ -1960,7 +1963,8 @@
                     else
                         if ( (RedWin%kind == window_lensing) .or. &
                              (RedWin%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
-                             (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing) )then !CDL
+                             (RedWin%kind == window_gw .and. CP%SourceTerms%gw_lensing) .or. &
+                             (RedWin%kind == window_gwlens) )then !CDL
                             Win%awin_lens(i)=0
                         end if
                     end if
@@ -1982,7 +1986,8 @@
         associate(Win => RW(RW_i))
             if ( (State%Redshift_w(RW_i)%kind == window_lensing) .or. &
                  (State%Redshift_w(RW_i)%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
-                 (State%Redshift_w(RW_i)%kind == window_gw .and. CP%SourceTerms%gw_lensing) ) then !CDL
+                 (State%Redshift_w(RW_i)%kind == window_gw .and. CP%SourceTerms%gw_lensing) .or. &
+                 (State%Redshift_w(RW_i)%kind == window_gwlens) ) then !CDL
                 this%has_lensing_windows = .true.
                 State%Redshift_w(RW_i)%has_lensing_window = .true.
                 if (FeedbackLevel>0)  write(*,'(I1," Int W              = ",f9.6)') RW_i, awin_lens1(RW_i)

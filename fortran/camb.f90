@@ -392,6 +392,7 @@
         call Ini%Read('gwlens_sw', P%SourceTerms%gwlens_sw)
         call Ini%Read('gwlens_ISW', P%SourceTerms%gwlens_ISW)
         call Ini%Read('gwlens_TD', P%SourceTerms%gwlens_TD)
+        call Ini%Read('gwlens_convergence', P%SourceTerms%gwlens_convergence)
     end if
 
     P%OutputNormalization=outNone

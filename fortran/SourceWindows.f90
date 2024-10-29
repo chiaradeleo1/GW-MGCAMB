@@ -80,6 +80,7 @@
         logical :: gwlens_sw = .false. !CDL
         logical :: gwlens_ISW = .false. !CDL
         logical :: gwlens_TD = .false. !CDL
+        logical :: gwlens_convergence = .true. !CDL
     end type SourceTermParams
 
     Type TRedWin !internal type

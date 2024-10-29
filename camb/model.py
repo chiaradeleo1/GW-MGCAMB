@@ -154,7 +154,8 @@ class SourceTermParams(CAMB_Structure):
         ("gwlens_volume", c_bool, "Include the GW lensing amplitude volume source"), #CDL
         ("gwlens_sw", c_bool, "Include the GW lensing amplitude Sachs-Wolfe source"),
         ("gwlens_ISW", c_bool, "Include the GW lensing amplitude ISW source"), #CDL
-        ("gwlens_TD", c_bool, "Include the GW lensing amplitude TD source")] #CDL
+        ("gwlens_TD", c_bool, "Include the GW lensing amplitude TD source"),
+        ("gwlens_convergence", c_bool, "Include the GW amplitude lensing source")] #CDL
     
 
 

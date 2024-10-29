@@ -488,12 +488,16 @@
                         
                 else if (W%kind == window_gw .and. CP%SourceTerms%gw_lensing) then !CDL
                     n2 = State%TimeSteps%npoints - 1
+
+                else if (W%kind == window_gwlens ) then !CDL
+                    n2 = State%TimeSteps%npoints - 1
                 
                 else
                     n2 = min(State%TimeSteps%npoints - 1, State%TimeSteps%IndexOf(W%tau_end))
                 end if
                 if ((W%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
-                    (W%kind == window_gw .and. CP%SourceTerms%gw_lensing)) then !CDL
+                    (W%kind == window_gw .and. CP%SourceTerms%gw_lensing) .or. &
+                    (W%kind == window_gwlens)) then !CDL
                     s_ix_lens = 3 + W%mag_index + State%num_redshiftwindows
                 end if
             end if
@@ -2287,7 +2291,8 @@
                                     if (Win%kind == window_lensing) &
                                         Delta1 = Delta1 / 2 * ell * (ell + 1)
                                     if ((Win%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
-                                        (Win%kind == window_gw .and. CP%SourceTerms%gw_lensing)) then !CDL
+                                        (Win%kind == window_gw .and. CP%SourceTerms%gw_lensing) .or. &
+                                        (Win%kind == window_gwlens)) then !CDL
                                         !want delta f/f - 2kappa;
                                         ! grad^2 = -l(l+1);
                                         Delta1 = Delta1 + ell * (ell + 1) * &
@@ -2310,7 +2315,8 @@
                                         if (Win%kind == window_lensing) &
                                             Delta2 = Delta2 / 2 * ell * (ell + 1)
                                             if ((Win%kind == window_counts .and. CP%SourceTerms%counts_lensing) .or. &
-                                                (Win%kind == window_gw .and. CP%SourceTerms%gw_lensing)) then !CDL
+                                            (Win%kind == window_gw .and. CP%SourceTerms%gw_lensing) .or. &
+                                            (Win%kind == window_gwlens)) then !CDL
                                             !want delta f/f - 2kappa;
                                             ! grad^2 = -l(l+1);
                                             Delta2 = Delta2 + ell * (ell + 1) * &
