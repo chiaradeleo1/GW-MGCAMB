@@ -1764,7 +1764,7 @@
 
                 ! Lensing source
                 if (CP%SourceTerms%gw_lensing) then
-                        
+                    
                     if (MG_flag==0) then
                             !print*, 'w_lens=', W%win_lens(j)
                         sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)
@@ -1774,6 +1774,12 @@
                 end if
 
             elseif (W%kind == window_gwlens) then !CDL
+                !convergence 
+                if (MG_flag==0) then
+                    sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)
+                else 
+                    sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
+                end if
                 
                     !volume source 
                 if (CP%SourceTerms%gwlens_volume) then
@@ -1839,18 +1845,19 @@
 
                 sources(3+w_ix)=  gwlens_volume_source + gwlens_sw_source + gwlens_ISW_source + gwlens_TD_source
                 sources(3+w_ix)=sources(3+w_ix)/W%Fq
+
                 
-                if (CP%SourceTerms%gwlens_convergence) then
-                    if (MG_flag==0) then
-                        sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)
+                !if (CP%SourceTerms%gwlens_convergence) then
+                 !   if (MG_flag==0) then
+                  !      sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)
                             
-                    else
-                        sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
-                    end if
-                else 
-                    print*, 'ATTENTION: !!YOU CANNOT USE GW-WL SETTING CONVERGENCE OFF!! PLEASE SET gwlens_convergence = True'
-                        stop
-                end if 
+                   ! else
+                    !    sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
+                    !end if
+                !else 
+                 !   print*, 'ATTENTION: !!YOU CANNOT USE GW-WL SETTING CONVERGENCE OFF!! PLEASE SET gwlens_convergence = True'
+                        !stop
+                !end if 
             
                 
 
