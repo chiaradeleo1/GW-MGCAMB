@@ -2799,7 +2799,18 @@
                 call spline_dderiv(TimeSteps%points(jstart),RedWin%winLSD(jstart),RedWin%ddwinLSD(jstart), ninterp)
 
             elseif (RedWin%kind == window_gwlens) then !CDL
-                !integrate WF needs to change the subroutine
+                
+                RedWin%Wingtau(jstart:TimeSteps%npoints) = &
+                RedWin%Wing(jstart:TimeSteps%npoints) - int_tmp(jstart:TimeSteps%npoints,i)/hubble_tmp(jstart:TimeSteps%npoints)
+
+                call spline(TimeSteps%points(jstart),RedWin%Wingtau(jstart),ninterp, &
+                    spl_large,spl_large,RedWin%ddWingtau(jstart))
+                call spline_deriv(TimeSteps%points(jstart),RedWin%Wingtau(jstart),RedWin%ddWingtau(jstart), &
+                    RedWin%dWingtau(jstart), ninterp)
+
+                !WinF is int[ g*(...)]
+                call spline_integrate(TimeSteps%points(jstart),RedWin%Wingtau(jstart),&
+                    RedWin%ddWingtau(jstart), RedWin%WinF(jstart),ninterp)
 
 
             end if

@@ -1777,7 +1777,7 @@
             elseif (W%kind == window_gwlens) then !CDL
                 !convergence 
                 if (MG_flag==0) then
-                    sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)
+                    sources(3+W%mag_index+State%num_redshiftwindows) = 0._dl!phi*W%win_lens(j)
                 else 
                     sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
                 end if
@@ -1818,8 +1818,7 @@
                     if (MG_flag==0) then
                             
                         gwlens_ISW_source =  - W%WinF(j)*2*phidot
-                        print*, 'ATTENTION: !!Window of ISW currently not working!! Please set gwlens_ISW = F'
-                        stop
+                        
                         
                     else
                         gwlens_ISW_source = - W%WinF(j)*(mg_phidot+mg_psidot) !CDL MG
