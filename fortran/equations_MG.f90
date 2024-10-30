@@ -1766,10 +1766,11 @@
                 if (CP%SourceTerms%gw_lensing) then
                     
                     if (MG_flag==0) then
-                            !print*, 'w_lens=', W%win_lens(j)
-                        sources(3+W%mag_index+State%num_redshiftwindows) = - 2*phi*W%win_lens(j)
+                        print*, 'ATTENTION THERE ARE SOME UNFIXED BUGS DO NOT RUN WITH gw_lensing = True.. HOPEFULLY IT WILL BE FIXED SOON!'
+                        stop
+                        sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
                     else
-                        sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j) !CDL MG
+                        sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j)*(1-5*W%Window%dlog10Ndm) !CDL MG
                     end if
                 end if
 

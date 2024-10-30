@@ -1939,9 +1939,11 @@
                             !print*, 'awin_lens', awin_lens4(RW_i) !CDL (2) PER AVERE IL TERMINE DI LENSING DIVERSO DA NAN BISOGNA PRINT QUI E IN (1)
                             if (State%tau0 - tau > 2) then
                                 gamma = 1._dl / (1._dl + 1._dl/(State%tau0 - tau) * a/adot)
+                                
                                 beta = gamma * ( - gamma*( 1._dl/(State%tau0 - tau)/(adot/a) * adotdota*(a/adot)**2) + 2._dl/(State%tau0 - tau)/(adot/a) + adotdota*(a/adot)**2 - 2)
-                                    
+                                
                                 dwing_lens =  adot * window * dtau
+                                
                                 awin_lens1(RW_i) = awin_lens1(RW_i) + dwing_lens
                                 awin_lens4(RW_i) = awin_lens4(RW_i) + (beta-1) * dwing_lens
                                 awin_lens2(RW_i) = awin_lens2(RW_i) + (beta-1) * dwing_lens/(State%tau0-tau)
