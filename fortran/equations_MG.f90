@@ -1410,7 +1410,7 @@
         counts_redshift_source, counts_timedelay_source, counts_potential_source
     real(dl) gw_density_source, gw_timedelay_source, gw_velocity_source, gw_isw_source, gw_lsd_source, gw_gradpotential_source, &
             gw_potential_source !CDL
-    real(dl) gwlens_volume_source, gwlens_sw_source, gwlens_ISW_source, gwlens_TD_source, gwlens_source !CDL
+    real(dl) gwlens_volume_source, gwlens_sw_source, gwlens_ISW_source, gwlens_TD_source, gwlens_velocity_source !CDL
     integer w_ix, lineoff,lineoffpol
     real(dl) Delta_TCMB
     integer j
@@ -1778,6 +1778,7 @@
                 !convergence 
                 if (MG_flag==0) then
                     sources(3+W%mag_index+State%num_redshiftwindows) = 0._dl!phi*W%win_lens(j)
+                    print*, 'YOU SET THIS EQUAL TO 0 REMEBER TO CHANGE'
                 else 
                     sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
                 end if
@@ -1818,8 +1819,7 @@
                     if (MG_flag==0) then
                             
                         gwlens_ISW_source =  - W%WinF(j)*2*phidot
-                        
-                        
+
                     else
                         gwlens_ISW_source = - W%WinF(j)*(mg_phidot+mg_psidot) !CDL MG
                     end if
@@ -1843,7 +1843,17 @@
                     
                 end if
 
-                sources(3+w_ix)=  gwlens_volume_source + gwlens_sw_source + gwlens_ISW_source + gwlens_TD_source
+                    !Doppler source 
+                if (CP%SourceTerms%gwlens_velocity) then
+                        
+                    gwlens_velocity_source = W%wingtau(j)*sigmadot/k + W%dwingtau(j)*sigma/k
+                
+                else
+                    gwlens_velocity_source = 0._dl
+                    
+                end if
+
+                sources(3+w_ix)=  gwlens_volume_source + gwlens_sw_source + gwlens_ISW_source + gwlens_TD_source + gwlens_velocity_source
                 sources(3+w_ix)=sources(3+w_ix)/W%Fq
 
                 
