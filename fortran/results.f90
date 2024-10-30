@@ -1703,7 +1703,7 @@
         real(dl), intent(out) :: adotdota
   
         type(MGCAMB_timestep_cache) :: mg_cache
-        adotdota = mg_cache%Hdot - mg_cache%adotoa**2
+        adotdota = mg_cache%Hdot + mg_cache%adotoa**2
 
     end subroutine calculate_adotdota
 
@@ -1836,7 +1836,7 @@
     awin_lens3=0
     awin_lens4=0
     transfer_ix =0
-    !print*, awin_lens4
+    print*, 'awin_lens4' , awin_lens4
 
     call splini(spline_data,nthermo)
 
