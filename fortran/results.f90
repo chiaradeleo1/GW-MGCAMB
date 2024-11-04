@@ -1703,6 +1703,7 @@
         real(dl), intent(out) :: adotdota
   
         type(MGCAMB_timestep_cache) :: mg_cache
+        !adotdota = ((this%adot(i)-this%adot(i-1))/dtau)/a
         adotdota = mg_cache%Hdot + mg_cache%adotoa**2
 
     end subroutine calculate_adotdota
@@ -1836,7 +1837,7 @@
     awin_lens3=0
     awin_lens4=0
     transfer_ix =0
-    print*, 'awin_lens4' , awin_lens4
+   ! print*, 'awin_lens4' , awin_lens4
 
     call splini(spline_data,nthermo)
 
@@ -1908,7 +1909,8 @@
         this%adot(i) = adot
         adotdota = 0._dl !CDL
 
-        call calculate_adotdota(State, adotdota) !CDL
+        !call calculate_adotdota(State, adotdota) !CDL
+        adotdota = ((this%adot(i)-this%adot(i-1))/dtau)/a
 
         if (this%matter_verydom_tau ==0 .and. a > a_verydom) then
             this%matter_verydom_tau = tau

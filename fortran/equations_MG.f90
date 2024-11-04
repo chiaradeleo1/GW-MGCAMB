@@ -1423,6 +1423,7 @@
     adotdota = 0._dl
 
     call calculate_adotdota(State, adotdota) !CDL
+    
 
     j = EV%OutputStep
     if (CP%SourceTerms%line_reionization) sources(2)=0
@@ -1766,20 +1767,21 @@
                 if (CP%SourceTerms%gw_lensing) then
                     
                     if (MG_flag==0) then
-                        print*, 'ATTENTION THERE ARE SOME UNFIXED BUGS DO NOT RUN WITH gw_lensing = True.. HOPEFULLY IT WILL BE FIXED SOON!'
-                        stop
-                        sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
+                        !print*, 'ATTENTION THERE ARE SOME UNFIXED BUGS DO NOT RUN WITH gw_lensing = True.. HOPEFULLY IT WILL BE FIXED SOON!'
+                        !stop
+                        sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)*2
+                        !print*, 'win', - phi*W%win_lens(j)*2
                     else
                         sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j)*(1-5*W%Window%dlog10Ndm) !CDL MG
                     end if
                 end if
-
+            print*, 'total=' ,  sources(3+W%mag_index+State%num_redshiftwindows)
             elseif (W%kind == window_gwlens) then !CDL
                 !convergence 
                 if (MG_flag==0) then
-                    sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)
+                    sources(3+W%mag_index+State%num_redshiftwindows) = -2*phi*W%win_lens(j)
                 else 
-                    sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
+                    sources(3+W%mag_index+State%num_redshiftwindows) = -(mg_phi+mg_psi)*W%win_lens(j)
                 end if
                 
                     !volume source 
@@ -3363,15 +3365,13 @@
         !> MGCAMB MOD START: Weyl Potential
         if ( tempmodel == 0 ) then
             phi = -((dgrho +3*dgq*adotoa/k)/EV%Kf(1) + dgpi)/(2*k2)
-            !print*, 'dgrho=', dgrho
+            
             psiN = -((dgrho +3*dgq*adotoa/k)/EV%Kf(1) + 2._dl*dgpi)/(2*k2)
             phiN = -psiN - ((dgrho +3*dgq*adotoa/k)/EV%Kf(1) + dgpi)/k2
         else
-           !phi = (mgcamb_cache%MG_psi+mgcamb_cache%MG_phi)/2._dl
-           mg_phi = mgcamb_cache%MG_phi
-           mg_psi = mgcamb_cache%MG_psi
-           !Qui mg_phi e mg_psi sono stampati bene
-           !print*, 'hello', mg_phi, mg_psi
+           mg_phi = mgcamb_cache%MG_phi !CDL MG
+           mg_psi = mgcamb_cache%MG_psi !CDL MG
+
         end if
         !< MGCAMB MOD END
 
