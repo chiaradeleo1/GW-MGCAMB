@@ -1703,7 +1703,8 @@
         real(dl), intent(out) :: adotdota
   
         type(MGCAMB_timestep_cache) :: mg_cache
-        !adotdota = ((this%adot(i)-this%adot(i-1))/dtau)/a
+        
+        
         adotdota = mg_cache%Hdot + mg_cache%adotoa**2
 
     end subroutine calculate_adotdota
@@ -1722,8 +1723,7 @@
     real(dl) tau01,a0,barssc,dtau
     real(dl) tau,a,a2
     real(dl) adot,fe,thomc0
-    real(dl) gamma, beta !CDL 
-    real(dl) :: adotdota  !CDL
+    real(dl) gamma, beta , adotdota  !CDL
     real(dl) dtbdla,vfi,cf1,maxvis, vis, z_scale
     integer ncount,i,j1,iv,ns
     real(dl), allocatable :: spline_data(:)
@@ -2454,7 +2454,7 @@
                     Win%winTD(nstep),Win%dwinTD(nstep),Win%winGPhi(nstep),Win%dwinGPhi(nstep),Win%winD(nstep),Win%dwinD(nstep), & !CDL
                     Win%winLSD(nstep), Win%dwinLSD(nstep), Win%ddwinLSD(nstep)) !CDL
                 allocate(Win%win_lens(nstep),Win%wing2(nstep),Win%dwing2(nstep),Win%ddwing2(nstep)) !CDL
-                allocate(Win%wingtau(nstep),Win%dwingtau(nstep),Win%ddwingtau(nstep)) !CDL
+                allocate(Win%wingtau(nstep),Win%dwingtau(nstep),Win%ddwingtau(nstep), Win%beta(nstep) ) !CDL
                 if ((Win%kind == window_counts) .or. (Win%kind == window_gw) ) then !CDL 
                     allocate(Win%comoving_density_ev(nstep))
                 end if
@@ -2475,11 +2475,11 @@
     real(dl) tau,  a, a2
     real(dl) Tspin, Trad, rho_fac, tau_eps
     real(dl) window, winamp
-    real(dl) z,rhos, adot, exp_fac, adotdota !, Hdotdot !CDL 
-    real(dl) tmp(TimeSteps%npoints), tmp2(TimeSteps%npoints), hubble_tmp(TimeSteps%npoints)
+    real(dl) z,rhos, adot, exp_fac  !CDL adotdota
+    real(dl) tmp(TimeSteps%npoints), tmp2(TimeSteps%npoints), hubble_tmp(TimeSteps%npoints), adotdota(TimeSteps%npoints), gamma(TimeSteps%npoints)
     real(dl), allocatable , dimension(:,:) :: int_tmp, back_count_tmp
     integer ninterp
-    real(dl) :: gamma, beta !CDL
+    !real(dl) :: gamma, beta !CDL adotdota
 
     ! Prevent false positive warnings for uninitialized
     Tspin = 0._dl
@@ -2517,6 +2517,7 @@
             RedWin%dwingtau=0
             RedWin%ddwingtau=0
             RedWin%Fq = 0
+            RedWin%beta = 0 !CDL adotdota
             if ((RedWin%kind == window_counts) .or. (RedWin%kind == window_gw) ) then !CDL
                 RedWin%comoving_density_ev  = 0
             end if
@@ -2534,9 +2535,9 @@
         a = 1._dl/(1._dl+z)
         a2=a**2
         adot=1._dl/dtauda(State,a)
-        adotdota = 0._dl
+        !adotdota = 0._dl !CDL adotdota
 
-        call calculate_adotdota(State, adotdota) !CDL
+        !call calculate_adotdota(State, adotdota) !CDL adotdota
         !print*, 'adotdota', adotdota 
 
         if (State%CP%Do21cm) then
@@ -2606,19 +2607,19 @@
                     RedWin%wing(j) = adot *window
                     
                     ! ISW window function
-                    RedWin%dwinISW(j) = RedWin%wing(j) * (2._dl * (beta+1))
+                    !RedWin%dwinISW(j) = RedWin%wing(j) * (2._dl * (beta+1)) !CDL adotdota
 
                     ! TD window function
-                    RedWin%dwinTD(j) = RedWin%wing(j) * ((1-beta)/(State%tau0 - tau) + gamma/(State%tau0 - tau)**2/(adot/a))
+                    !RedWin%dwinTD(j) = RedWin%wing(j) * ((1-beta)/(State%tau0 - tau) + gamma/(State%tau0 - tau)**2/(adot/a)) !CDL adotdota
 
                     ! Potential gradient window function
-                    RedWin%winGPhi(j) = RedWin%wing(j) * gamma/(adot/a)
+                    !RedWin%winGPhi(j) = RedWin%wing(j) * gamma/(adot/a)
 
                     ! Velocity window function
-                    RedWin%winD(j) = RedWin%wing(j) * (1  - 2._dl*gamma - 2._dl*(beta+1))
+                    !RedWin%winD(j) = RedWin%wing(j) * (1  - 2._dl*gamma - 2._dl*(beta+1))
 
                     ! LSD window function
-                    RedWin%winLSD(j) = RedWin%wing(j) * gamma/(adot/a) * 2._dl
+                    !RedWin%winLSD(j) = RedWin%wing(j) * gamma/(adot/a) * 2._dl
 
                     if (State%CP%SourceTerms%gw_evolve) then !CDL
                         back_count_tmp(j,i) =  RedWin%Window%counts_background_z(1/a-1)/a
@@ -2731,6 +2732,35 @@
                     RedWin%ddWingtau(jstart), RedWin%WinF(jstart),ninterp)
 
             elseif (RedWin%kind == window_gw) then !CDL
+                call spline(TimeSteps%points(jstart),hubble_tmp(jstart),ninterp,spl_large,spl_large,tmp)
+                call spline_deriv(TimeSteps%points(jstart),hubble_tmp(jstart),tmp, tmp2(jstart),ninterp)
+                adotdota(jstart:TimeSteps%npoints) = tmp2(jstart:TimeSteps%npoints) + hubble_tmp(jstart:TimeSteps%npoints)**2.
+
+                gamma(jstart:TimeSteps%npoints) = 1.D0 / (1 + 1.D0/(State%tau0 - TimeSteps%points(jstart:TimeSteps%npoints))/hubble_tmp(jstart:TimeSteps%npoints))
+
+                RedWin%beta(jstart:TimeSteps%npoints) = gamma(jstart:TimeSteps%npoints) &
+                    * ( - gamma(jstart:TimeSteps%npoints)*( 1.D0/(State%tau0 - TimeSteps%points(jstart:TimeSteps%npoints))/hubble_tmp(jstart:TimeSteps%npoints) &
+                    * adotdota(jstart:TimeSteps%npoints)/(hubble_tmp(jstart:TimeSteps%npoints))**2 ) &
+                    + 2.D0/(State%tau0 - TimeSteps%points(jstart:TimeSteps%npoints))/hubble_tmp(jstart:TimeSteps%npoints) &
+                    + adotdota(jstart:TimeSteps%npoints)/(hubble_tmp(jstart:TimeSteps%npoints))**2 - 2)
+                
+                !ISW window function
+                RedWin%dwinISW(jstart:TimeSteps%npoints) = 2.D0 * (RedWin%beta(jstart:TimeSteps%npoints) + 1) * RedWin%wing(jstart:TimeSteps%npoints)
+    
+                !Time delay window function
+                RedWin%dwinTD(jstart:TimeSteps%npoints) = RedWin%wing(jstart:TimeSteps%npoints) * ((1-RedWin%beta(jstart:TimeSteps%npoints))/(State%tau0 - TimeSteps%points(jstart:TimeSteps%npoints)) &
+                     + gamma(jstart:TimeSteps%npoints)/(State%tau0 - TimeSteps%points(jstart:TimeSteps%npoints))**2/hubble_tmp(jstart:TimeSteps%npoints))
+                        
+                !Velocity window function
+                RedWin%winD(jstart:TimeSteps%npoints) = - RedWin%wing(jstart:TimeSteps%npoints) * (1 + 2.D0*gamma(jstart:TimeSteps%npoints))! + 2.D0*RedWin%beta(jstart:TimeSteps%npoints))
+                    
+                !DSD window function
+                RedWin%winLSD(jstart:TimeSteps%npoints) = 2.D0 * RedWin%wing(jstart:TimeSteps%npoints) * gamma(jstart:TimeSteps%npoints)/(adot/a)
+                
+                !Potential gradient window function
+                RedWin%winGPhi(jstart:TimeSteps%npoints) = RedWin%wing(jstart:TimeSteps%npoints) * gamma(jstart:TimeSteps%npoints)/hubble_tmp(jstart:TimeSteps%npoints)
+
+
 
                 if (State%CP%SourceTerms%gw_evolve) then !CDL
                     call spline(TimeSteps%points(jstart),back_count_tmp(jstart,i),ninterp,spl_large,spl_large,tmp)
@@ -2760,7 +2790,6 @@
                         end if
                     end do
                 else
-                    !print*, 'Hello'
                     RedWin%comoving_density_ev=0
                     call spline(TimeSteps%points(jstart),hubble_tmp(jstart),ninterp,spl_large,spl_large,tmp) !CDL
                     call spline_deriv(TimeSteps%points(jstart),hubble_tmp(jstart),tmp, tmp2(jstart), ninterp)
@@ -2777,29 +2806,36 @@
                     spl_large,spl_large,RedWin%ddWingtau(jstart))
                 call spline_deriv(TimeSteps%points(jstart),RedWin%Wingtau(jstart),RedWin%ddWingtau(jstart), &
                     RedWin%dWingtau(jstart), ninterp)
-
                 call spline_integrate(TimeSteps%points(jstart),RedWin%Wingtau(jstart),& !CDL
                     RedWin%ddWingtau(jstart), RedWin%WinF(jstart),ninterp)
 
-                call spline(TimeSteps%points(jstart),RedWin%winISW(jstart),ninterp,spl_large,spl_large,tmp)
-                call spline_integrate(TimeSteps%points(jstart),RedWin%dwinISW(jstart),tmp, tmp2(jstart),ninterp)
-                RedWin%winISW(jstart:TimeSteps%npoints) =  &
-                    RedWin%winISW(jstart:TimeSteps%npoints) + tmp2(jstart:TimeSteps%npoints) !CDL
+                if (State%CP%SourceTerms%gw_ISW) then
+                    call spline(TimeSteps%points(jstart),RedWin%winISW(jstart),ninterp,spl_large,spl_large,tmp)
+                    call spline_integrate(TimeSteps%points(jstart),RedWin%dwinISW(jstart),tmp, tmp2(jstart),ninterp)
+                    RedWin%winISW(jstart:TimeSteps%npoints) =  &
+                        RedWin%winISW(jstart:TimeSteps%npoints) + tmp2(jstart:TimeSteps%npoints) !CDL
+                end if
 
-                call spline(TimeSteps%points(jstart),RedWin%winTD(jstart),ninterp,spl_large,spl_large,tmp)
-                call spline_integrate(TimeSteps%points(jstart),RedWin%dwinTD(jstart),tmp, tmp2(jstart),ninterp)
-                RedWin%winTD(jstart:TimeSteps%npoints) =  &
-                    RedWin%winTD(jstart:TimeSteps%npoints) + tmp2(jstart:TimeSteps%npoints) !CDL
+                if (State%CP%SourceTerms%gw_timedelay) then
+                    call spline(TimeSteps%points(jstart),RedWin%winTD(jstart),ninterp,spl_large,spl_large,tmp)
+                    call spline_integrate(TimeSteps%points(jstart),RedWin%dwinTD(jstart),tmp, tmp2(jstart),ninterp)
+                    RedWin%winTD(jstart:TimeSteps%npoints) =  &
+                        RedWin%winTD(jstart:TimeSteps%npoints) + tmp2(jstart:TimeSteps%npoints) !CDL
+                end if
 
-                call spline(TimeSteps%points(jstart),RedWin%dwinGPhi(jstart),ninterp,spl_large,spl_large,tmp) !CDL
-                call spline_deriv(TimeSteps%points(jstart),RedWin%winGPhi(jstart),tmp, RedWin%dwinGPhi(jstart), ninterp)
+                if (State%CP%SourceTerms%gw_gradpotential)  then
+                    call spline(TimeSteps%points(jstart),RedWin%dwinGPhi(jstart),ninterp,spl_large,spl_large,tmp) !CDL
+                    call spline_deriv(TimeSteps%points(jstart),RedWin%winGPhi(jstart),tmp, RedWin%dwinGPhi(jstart), ninterp)
+                end if
+                if (State%CP%SourceTerms%gw_velocity)  then
+                    call spline_derivv(TimeSteps%points(jstart),RedWin%winD(jstart), RedWin%dwinD(jstart), ninterp) !CDL
+                end if
 
-                call spline_derivv(TimeSteps%points(jstart),RedWin%winD(jstart), RedWin%dwinD(jstart), ninterp) !CDL
-
-                call spline(TimeSteps%points(jstart),RedWin%winLSD(jstart),ninterp,spl_large,spl_large,tmp) !CDL
-                call spline_deriv(TimeSteps%points(jstart),RedWin%winLSD(jstart),tmp, RedWin%dwinLSD(jstart), ninterp)
-                call spline_dderiv(TimeSteps%points(jstart),RedWin%winLSD(jstart),RedWin%ddwinLSD(jstart), ninterp)
-
+                if (State%CP%SourceTerms%gw_lsd)  then
+                    call spline(TimeSteps%points(jstart),RedWin%dwinLSD(jstart),ninterp,spl_large,spl_large,tmp) !CDL
+                    call spline_deriv(TimeSteps%points(jstart),RedWin%winLSD(jstart),tmp, RedWin%dwinLSD(jstart), ninterp)
+                    call spline_dderiv(TimeSteps%points(jstart),RedWin%winLSD(jstart),RedWin%ddwinLSD(jstart), ninterp)
+                end if
             elseif (RedWin%kind == window_gwlens) then !CDL
                 
                 RedWin%Wingtau(jstart:TimeSteps%npoints) = &

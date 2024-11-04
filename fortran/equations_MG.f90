@@ -1424,6 +1424,8 @@
 
     call calculate_adotdota(State, adotdota) !CDL
     
+    
+    
 
     j = EV%OutputStep
     if (CP%SourceTerms%line_reionization) sources(2)=0
@@ -1727,8 +1729,9 @@
                 end if
                 ! Luminosity space distortions
                 if (CP%SourceTerms%gw_lsd) then
-                    gw_lsd_source = W%ddwinLSD(j)/k * sigma + W%dwinLSD(j)/k * (2.D0*etak/EV%Kf(1) - 4.D0*adotoa*sigma) + &
+                    gw_lsd_source = W%ddwinLSD(j)/k * sigma + 2.D0*W%dwinLSD(j)/k * (2.D0*etak/EV%Kf(1) - 4.D0*adotoa*sigma) + &
                                               W%winLSD(j)/k * ((4.D0*adotoa**2+gpres+grho/3.D0)*sigma - etak/adotoa*k**2/3.D0 - dgrho/adotoa/6.D0*k +(etak/adotoa*k**2/3.D0 + dgrho/adotoa/6.D0*k + dgq/2.D0 - 2.D0*etak*adotoa)/EV%Kf(1))
+                
                 else
                     gw_lsd_source = 0._dl
                 end if
@@ -1736,13 +1739,14 @@
                 ! Potential source:
                 if (CP%SourceTerms%gw_potential) then
                     if (MG_flag==0) then
-                        gw_potential_source = W%wing(j)*(beta-1-gamma/adotoa/(State%tau0 - tau))*phi + W%wing(j)* gamma/adotoa*phidot + &
-                                                    W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(beta+1))*phi
+                        
+                        gw_potential_source = W%wing(j)*(W%beta(j)-1-gamma/adotoa/(State%tau0 - tau))*phi + W%wing(j)* gamma/adotoa*phidot + &
+                                                    W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(W%beta(j)+1))*phi
                     else
-                        gw_potential_source = W%wing(j)*(beta-1-gamma/adotoa/(State%tau0 - tau))*phi + W%wing(j)* gamma/adotoa*phidot + &
-                                                    W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(beta+1))*mg_phi !CDL MG
+                        gw_potential_source = W%wing(j)*(W%beta(j)-1-gamma/adotoa/(State%tau0 - tau))*phi + W%wing(j)* gamma/adotoa*phidot + &
+                                                    W%wing(j)*(1-gamma/adotoa/(State%tau0 - tau)+2._dl*(W%beta(j)+1))*mg_phi !CDL MG
                     end if
-                    print*, 'total=', gw_potential_source
+                    !print*, 'total=', gw_potential_source
                 else
                     gw_potential_source = 0._dl
                 end if
@@ -1755,7 +1759,6 @@
                     else
                         gw_gradpotential_source = W%dwinGPhi(j)*mg_phi + W%winGPhi(j)*phidot !CDL MG
                     end if
-                    !print*, 'sources=', gw_gradpotential_source
                 else
                     gw_gradpotential_source = 0._dl
                 end if
@@ -1775,7 +1778,7 @@
                         sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j)*(1-5*W%Window%dlog10Ndm) !CDL MG
                     end if
                 end if
-            print*, 'total=' ,  sources(3+W%mag_index+State%num_redshiftwindows)
+            
             elseif (W%kind == window_gwlens) then !CDL
                 !convergence 
                 if (MG_flag==0) then
