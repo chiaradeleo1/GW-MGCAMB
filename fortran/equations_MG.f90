@@ -1770,8 +1770,7 @@
                 if (CP%SourceTerms%gw_lensing) then
                     
                     if (MG_flag==0) then
-                        !print*, 'ATTENTION THERE ARE SOME UNFIXED BUGS DO NOT RUN WITH gw_lensing = True.. HOPEFULLY IT WILL BE FIXED SOON!'
-                        !stop
+                        
                         sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)*2
                         !print*, 'win', - phi*W%win_lens(j)*2
                     else
@@ -1782,9 +1781,9 @@
             elseif (W%kind == window_gwlens) then !CDL
                 !convergence 
                 if (MG_flag==0) then
-                    sources(3+W%mag_index+State%num_redshiftwindows) = -2*phi*W%win_lens(j)
+                    sources(3+W%mag_index+State%num_redshiftwindows) = -phi*W%win_lens(j)
                 else 
-                    sources(3+W%mag_index+State%num_redshiftwindows) = -(mg_phi+mg_psi)*W%win_lens(j)
+                    sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
                 end if
                 
                     !volume source 
@@ -1859,6 +1858,7 @@
 
                 sources(3+w_ix)=  gwlens_volume_source + gwlens_sw_source + gwlens_ISW_source + gwlens_TD_source + gwlens_velocity_source
                 sources(3+w_ix)=sources(3+w_ix)/W%Fq
+                
 
                 
                 !if (CP%SourceTerms%gwlens_convergence) then
