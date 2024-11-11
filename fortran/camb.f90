@@ -304,9 +304,9 @@
                 RedWin%source_type = window_21cm
             elseif (S == 'counts') then
                 RedWin%source_type = window_counts
-            elseif (S == 'gws') then
+            elseif (S == 'gwcounts') then
                     RedWin%source_type = window_gw !CDL gwcounts
-            elseif (S == 'gws_lens') then
+            elseif (S == 'gwamp') then
                     RedWin%source_type = window_gwlens !CDL gwlensing
             elseif (S == 'lensing') then
                 RedWin%source_type = window_lensing
@@ -375,24 +375,24 @@
     end if
 
     if (DoGws) then !CDL
-        call Ini%Read('gw_density', P%SourceTerms%gw_density)
-        call Ini%Read('gw_timedelay', P%SourceTerms%gw_timedelay)
-        call Ini%Read('gw_evolve', P%SourceTerms%gw_evolve)
-        call Ini%Read('gw_velocity', P%SourceTerms%gw_velocity)
-        call Ini%Read('gw_ISW', P%SourceTerms%gw_ISW)
-        call Ini%Read('gw_lsd', P%SourceTerms%gw_lsd)
-        call Ini%Read('gw_gradpotential', P%SourceTerms%gw_gradpotential)
-        call Ini%Read('gw_potential', P%SourceTerms%gw_potential)
-        call Ini%Read('gw_lensing', P%SourceTerms%gw_lensing)
+        call Ini%Read('gwcounts_density', P%SourceTerms%gw_density)
+        call Ini%Read('gwcounts_timedelay', P%SourceTerms%gw_timedelay)
+        call Ini%Read('gwcounts_evolve', P%SourceTerms%gw_evolve)
+        call Ini%Read('gwcounts_velocity', P%SourceTerms%gw_velocity)
+        call Ini%Read('gwcounts_ISW', P%SourceTerms%gw_ISW)
+        call Ini%Read('gwcounts_dsd', P%SourceTerms%gw_lsd)
+        call Ini%Read('gwcounts_gradpotential', P%SourceTerms%gw_gradpotential)
+        call Ini%Read('gwcounts_potential', P%SourceTerms%gw_potential)
+        call Ini%Read('gwcounts_lensing', P%SourceTerms%gw_lensing)
         
     end if
 
     if (DoGwsLens) then !CDL
-        call Ini%Read('gwlens_volume', P%SourceTerms%gwlens_volume)
-        call Ini%Read('gwlens_sw', P%SourceTerms%gwlens_sw)
-        call Ini%Read('gwlens_ISW', P%SourceTerms%gwlens_ISW)
-        call Ini%Read('gwlens_TD', P%SourceTerms%gwlens_TD)
-        call Ini%Read('gwlens_velocity', P%SourceTerms%gwlens_velocity)
+        call Ini%Read('gwamp_volume', P%SourceTerms%gwlens_volume)
+        call Ini%Read('gwamp_sw', P%SourceTerms%gwlens_sw)
+        call Ini%Read('gwamp_ISW', P%SourceTerms%gwlens_ISW)
+        call Ini%Read('gwamp_TD', P%SourceTerms%gwlens_TD)
+        call Ini%Read('gwamp_velocity', P%SourceTerms%gwlens_velocity)
     end if
 
     P%OutputNormalization=outNone
