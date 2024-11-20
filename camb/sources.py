@@ -9,7 +9,7 @@ class SourceWindow(F2003Class):
 
     Note that source windows can currently only be used in flat models.
     """
-    _fields_ = [("source_type", c_int, {"names": ["21cm", "counts", "lensing", "gws", "gws_lens"], "start": 1}), #CDL
+    _fields_ = [("source_type", c_int, {"names": ["21cm", "counts", "lensing", "gwcounts", "gwamp"], "start": 1}), #CDL
                 ("bias", c_double),
                 ("dlog10Ndm", c_double)]
 
