@@ -1783,7 +1783,7 @@
                 if (MG_flag==0) then
                     sources(3+W%mag_index+State%num_redshiftwindows) = -phi*W%win_lens(j)
                 else 
-                    sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
+                    sources(3+W%mag_index+State%num_redshiftwindows) = -0.5*(mg_phi+mg_psi)*W%win_lens(j)
                 end if
                 
                     !volume source 
