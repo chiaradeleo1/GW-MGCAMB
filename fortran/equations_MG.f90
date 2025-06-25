@@ -1491,9 +1491,9 @@
                 if (CP%SourceTerms%counts_timedelay) then
                     !time delay; WinV is int g/chi
                     if (MG_flag==0) then
-                        counts_timedelay_source= 2*(1-2.5*W%Window%dlog10Ndm)*W%WinV(j)*2*phi
+                        counts_timedelay_source= (1-2.5*W%Window%dlog10Ndm)*W%WinV(j)*2*phi
                     else
-                        counts_timedelay_source= 2*(1-2.5*W%Window%dlog10Ndm)*W%WinV(j)*(mg_phi+mg_psi) !CDL MG
+                        counts_timedelay_source= (1-2.5*W%Window%dlog10Ndm)*W%WinV(j)*(mg_phi+mg_psi) !CDL MG
                     end if
                 else
                     counts_timedelay_source = 0
@@ -1544,7 +1544,7 @@
                         sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
                         
                     else
-                        sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)*(2-5*W%Window%dlog10Ndm) !CDL MG
+                        sources(3+W%mag_index+State%num_redshiftwindows) = 0.5*(mg_phi+mg_psi)*W%win_lens(j)*(2-5*W%Window%dlog10Ndm) !CDL MG
                     end if
                 end if
                     
@@ -1701,7 +1701,7 @@
                         gw_timedelay_source = W%winTD(j)*2*phi
                     else
                         
-                        gw_timedelay_source = W%winTD(j)*(mg_phi+mg_psi) !CDL_MG
+                        gw_timedelay_source = W%winTD(j)*(mg_phi+mg_psi)*0.5 !CDL_MG
                     end if
                     !gw_timedelay_source = W%winTD(j)*2*mgcamb_cache%MG_phi
                 else
@@ -1763,7 +1763,7 @@
                     gw_gradpotential_source = 0._dl
                 end if
 
-                sources(3+w_ix)=    gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source + &
+                sources(3+w_ix)=  gw_density_source + gw_timedelay_source + gw_velocity_source + gw_isw_source + &
                     gw_lsd_source + gw_gradpotential_source + gw_potential_source
 
                 ! Lensing source
@@ -1771,10 +1771,10 @@
                     
                     if (MG_flag==0) then
                         
-                        sources(3+W%mag_index+State%num_redshiftwindows) = - phi*W%win_lens(j)*2
+                        sources(3+W%mag_index+State%num_redshiftwindows) = -phi*W%win_lens(j)*(2-5*W%Window%dlog10Ndm)
                         !print*, 'win', - phi*W%win_lens(j)*2
                     else
-                        sources(3+W%mag_index+State%num_redshiftwindows) = - (mg_phi+mg_psi)*W%win_lens(j)*(1-5*W%Window%dlog10Ndm) !CDL MG
+                        sources(3+W%mag_index+State%num_redshiftwindows) = -0.5*(mg_phi+mg_psi)*W%win_lens(j)*(2-5*W%Window%dlog10Ndm) !CDL MG
                     end if
                 end if
             
@@ -1795,7 +1795,7 @@
                         gwlens_volume_source = -W%wing(j)*2*phi
                         
                     else
-                        gwlens_volume_source = -W%wing(j)*(mg_phi+mg_psi) !CDL MG
+                        gwlens_volume_source = -W%wing(j)*(mg_phi+mg_psi)*0.5 !CDL MG
                     end if
                 else
                     gwlens_volume_source = 0._dl
