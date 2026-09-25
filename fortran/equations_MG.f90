@@ -1781,10 +1781,11 @@
             elseif (W%kind == window_gwlens) then !CDL
                 !convergence 
                 if (MG_flag==0) then
-                    sources(3+W%mag_index+State%num_redshiftwindows) = -2*phi*W%win_lens(j) !CDL lensingGW
-                    
-                else 
-                    sources(3+W%mag_index+State%num_redshiftwindows) = -(mg_phi+mg_psi)*W%win_lens(j)
+                    !mag slot is multiplied by l(l+1) (no 1/2) in cmbmain, so this gives kappa = l(l+1)/2 int (Phi+Psi) W_lens
+                    sources(3+W%mag_index+State%num_redshiftwindows) = -phi*W%win_lens(j) !CDL lensingGW
+
+                else
+                    sources(3+W%mag_index+State%num_redshiftwindows) = -0.5*(mg_phi+mg_psi)*W%win_lens(j)
                 end if
            
                     !volume source 
@@ -1795,7 +1796,7 @@
                         gwlens_volume_source = -W%wing(j)*2*phi
                         
                     else
-                        gwlens_volume_source = -W%wing(j)*(mg_phi+mg_psi)*0.5 !CDL MG
+                        gwlens_volume_source = -W%wing(j)*(mg_phi+mg_psi) !CDL MG
                     end if
                 else
                     gwlens_volume_source = 0._dl
@@ -1864,10 +1865,10 @@
                 
                 !if (CP%SourceTerms%gwlens_convergence) then
                  !   if (MG_flag==0) then
-                  !      sources(3+W%mag_index+State%num_redshiftwindows) = phi*W%win_lens(j)
-                            
+                  !      sources(3+W%mag_index+State%num_redshiftwindows) = -phi*W%win_lens(j)
+
                    ! else
-                    !    sources(3+W%mag_index+State%num_redshiftwindows) = (mg_phi+mg_psi)*W%win_lens(j)
+                    !    sources(3+W%mag_index+State%num_redshiftwindows) = -0.5*(mg_phi+mg_psi)*W%win_lens(j)
                     !end if
                 !else 
                  !   print*, 'ATTENTION: !!YOU CANNOT USE GW-WL SETTING CONVERGENCE OFF!! PLEASE SET gwlens_convergence = True'
